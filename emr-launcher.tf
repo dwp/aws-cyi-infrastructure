@@ -46,7 +46,7 @@ resource "aws_iam_role" "aws_cyi_infrastructure_emr_launcher_lambda_role" {
 
 data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_assume_policy" {
   statement {
-    sid     = "aws-cyi-infrastructure-EMRLauncherLambdaAssumeRolePolicy"
+    sid     = "cyiEMRLauncherLambdaAssumeRolePolicy"
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
 
@@ -84,7 +84,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_receive_sqs_
     actions = [
       "sqs:ReceiveMessage",
     ]
-    resources = [*]
+    resources = ["*"]
   }
 }
 

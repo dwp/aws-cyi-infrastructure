@@ -61,7 +61,7 @@ resource "aws_lambda_permission" "aws_cyi_infrastructure_emr_relauncher_invoke_p
 
 data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_relauncher_assume_policy" {
   statement {
-    sid     = "aws_cyi_infrastructureEMRLauncherLambdaAssumeRolePolicy"
+    sid     = "cyiEMRLauncherLambdaAssumeRolePolicy"
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
 

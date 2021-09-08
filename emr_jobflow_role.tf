@@ -115,7 +115,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_extra_ssm_properties" {
 }
 
 resource "aws_iam_policy" "aws_cyi_infrastructure_extra_ssm_properties" {
-  name        = "AwsEmrTemplateRepositoryExtraSSM"
+  name        = "cyiAwsEmrTemplateRepositoryExtraSSM"
   description = "Additional properties to allow for SSM and writing logs"
   policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_extra_ssm_properties.json
   tags = {
@@ -299,7 +299,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_write_dynamodb" {
 }
 
 resource "aws_iam_policy" "aws_cyi_infrastructure_write_dynamodb" {
-  name        = "AwsEmrTemplateRepositoryDynamoDB"
+  name        = "cyiAwsEmrTemplateRepositoryDynamoDB"
   description = "Allows read and write access toaws_cyi_infrastructure's EMRFS DynamoDB table"
   policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_write_dynamodb.json
   tags = {
