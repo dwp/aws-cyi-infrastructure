@@ -33,7 +33,7 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_relauncher" {
   }
 
   tags = {
-    Name = "aws_cyi_infrastructure_emr_relauncher",
+    Name    = "aws_cyi_infrastructure_emr_relauncher",
     Version = var.dataworks_emr_relauncher_zip["version"]
   }
 }

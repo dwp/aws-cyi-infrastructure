@@ -32,7 +32,7 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_launcher" {
   }
 
   tags = {
-    Name = "${local.emr_cluster_name}_emr_launcher"
+    Name    = "${local.emr_cluster_name}_emr_launcher"
     Version = var.emr_launcher_zip["version"]
   }
 }
