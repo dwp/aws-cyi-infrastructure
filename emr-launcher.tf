@@ -78,6 +78,16 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_read_s3_poli
   }
 }
 
+data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "sqs:ReceiveMessage",
+    ]
+    resources = [*]
+  }
+}
+
 data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_runjobflow_policy" {
   statement {
     effect = "Allow"
@@ -109,6 +119,15 @@ resource "aws_iam_policy" "aws_cyi_infrastructure_emr_launcher_read_s3_policy" {
   policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_emr_launcher_read_s3_policy.json
   tags = {
     Name = "${local.emr_cluster_name}_emr_launcher_read_s3_policy"
+  }
+}
+
+resource "aws_iam_policy" "aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy" {
+  name        = "${local.emr_cluster_name}ReadSQS"
+  description = "Allow aws_cyi_infrastructure to receive SQS messages"
+  policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy.json
+  tags = {
+    Name = "${local.emr_cluster_name}_emr_launcher_receive_sqs_message_policy"
   }
 }
 
@@ -179,7 +198,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_getsecrets" 
     ]
 
     resources = [
-      data.terraform_remote_state.internal_compute.outputs.metadata_store_users.aws_cyi_infrastructure_writer.secret_arn,
+      data.terraform_remote_state.internal_compute.outputs.metadata_store_users.cyi_writer.secret_arn,
     ]
   }
 }

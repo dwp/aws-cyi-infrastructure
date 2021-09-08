@@ -1,3 +1,27 @@
 #!/usr/bin/env bash
+set -Eeuo pipefail
 
-echo "${published_bucket}"
+(
+
+    # Import the logging functions
+    source /opt/emr/logging.sh
+
+    function log_wrapper_message() {
+        log_aws_cyi_message "$${1}" "create-cyi-databases.sh" "Running as: ,$USER"
+    }
+
+    S3_BUCKET="$2"
+    S3_PREFIX="$4"
+    EXPORT_DATE="$6"
+    
+    echo "$S3_BUCKET" >>          /opt/emr/s3_bucket.txt
+    echo "$S3_PREFIX" >>          /opt/emr/s3_prefix.txt
+    echo "$EXPORT_DATE" >>        /opt/emr/export_date.txt
+
+    log_wrapper_message "Creating cyi Databases"
+
+    hive -e "CREATE DATABASE IF NOT EXISTS ${cyi_db} LOCATION '${published_bucket}/${hive_metastore_location}';"
+
+    log_wrapper_message "Finished creating cyi Databases"
+
+) >> /var/log/aws-cyi/create-cyi-databases.log 2>&1
