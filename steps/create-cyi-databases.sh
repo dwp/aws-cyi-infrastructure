@@ -10,10 +10,12 @@ set -Eeuo pipefail
         log_aws_cyi_message "$${1}" "create-cyi-databases.sh" "Running as: ,$USER"
     }
 
-    S3_BUCKET="$2"
-    S3_PREFIX="$4"
-    EXPORT_DATE="$6"
-    
+    CORRELATION_ID="$2"
+    S3_BUCKET="$4"
+    S3_PREFIX="$6"
+    EXPORT_DATE="$8"
+
+    echo "$CORRELATION_ID"        /opt/emr/correlation_id.txt
     echo "$S3_BUCKET" >>          /opt/emr/s3_bucket.txt
     echo "$S3_PREFIX" >>          /opt/emr/s3_prefix.txt
     echo "$EXPORT_DATE" >>        /opt/emr/export_date.txt

@@ -9,7 +9,7 @@ variable "dataworks_emr_relauncher_zip" {
 
 resource "aws_lambda_function" "aws_cyi_infrastructure_emr_relauncher" {
   filename      = "${var.dataworks_emr_relauncher_zip["base_path"]}/dataworks-emr-relauncher-${var.dataworks_emr_relauncher_zip["version"]}.zip"
-  function_name = "aws_cyi_infrastructure_emr_relauncher"
+  function_name = "${local.emr_cluster_name}_emr_relauncher"
   role          = aws_iam_role.aws_cyi_infrastructure_emr_relauncher_lambda_role.arn
   handler       = "event_handler.handler"
   runtime       = "python3.8"
@@ -33,7 +33,8 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_relauncher" {
   }
 
   tags = {
-    Name = "aws_cyi_infrastructure_emr_relauncher"
+    Name = "aws_cyi_infrastructure_emr_relauncher",
+    Version = var.dataworks_emr_relauncher_zip["version"]
   }
 }
 
