@@ -78,14 +78,14 @@ resource "aws_s3_bucket_object" "configurations" {
       proxy_https_host                              = data.terraform_remote_state.internal_compute.outputs.internet_proxy.host
       proxy_https_port                              = data.terraform_remote_state.internal_compute.outputs.internet_proxy.port
       environment                                   = local.environment
-      hive_tez_container_size                       = var.hive_tez_container_size
-      hive_tez_java_opts                            = var.hive_tez_java_opts
-      hive_auto_convert_join_noconditionaltask_size = var.hive_auto_convert_join_noconditionaltask_size
-      tez_grouping_min_size                         = var.tez_grouping_min_size
-      tez_grouping_max_size                         = var.tez_grouping_max_size
-      tez_am_resource_memory_mb                     = var.tez_am_resource_memory_mb
-      tez_am_launch_cmd_opts                        = var.tez_am_launch_cmd_opts
-      tez_runtime_io_sort_mb                        = var.tez_runtime_io_sort_mb
+      hive_tez_container_size                       = local.hive_tez_container_size[local.environment]
+      hive_tez_java_opts                            = local.hive_tez_java_opts[local.environment]
+      hive_auto_convert_join_noconditionaltask_size = local.hive_auto_convert_join_noconditionaltask_size[local.environment]
+      tez_grouping_min_size                         = local.tez_grouping_min_size[local.environment]
+      tez_grouping_max_size                         = local.tez_grouping_max_size[local.environment]
+      tez_am_resource_memory_mb                     = local.tez_am_resource_memory_mb[local.environment]
+      tez_am_launch_cmd_opts                        = local.tez_am_launch_cmd_opts[local.environment]
+      tez_runtime_io_sort_mb                        = local.tez_runtime_io_sort_mb[local.environment]
     }
   )
   tags = {
