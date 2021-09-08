@@ -10,7 +10,7 @@
     source /opt/emr/logging.sh
 
     function log_wrapper_message() {
-        log_aws_cyi_infrastructure_message "$${1}" "status_metrics.sh" "$${PID}" "$${@:2}" "Running as: ,$USER"
+        log_cyi_message "$${1}" "status_metrics.sh" "$${PID}" "$${@:2}" "Running as: ,$USER"
     }
 
   log_wrapper_message "Start running status_metrics.sh Shell"

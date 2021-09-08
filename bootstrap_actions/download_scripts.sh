@@ -1,10 +1,10 @@
 #!/bin/bash
 
-sudo mkdir -p /var/log/aws-cyi-infrastructure
+sudo mkdir -p /var/log/cyi
 sudo mkdir -p /opt/emr
 sudo mkdir -p /opt/shared
 sudo mkdir -p /var/ci
-sudo chown hadoop:hadoop /var/log/aws-cyi-infrastructure
+sudo chown hadoop:hadoop /var/log/cyi
 sudo chown hadoop:hadoop /opt/emr
 sudo chown hadoop:hadoop /opt/shared
 sudo chown hadoop:hadoop /var/ci
@@ -27,7 +27,7 @@ chmod u+x /opt/emr/logging.sh
     source /opt/emr/logging.sh
 
     function log_wrapper_message() {
-        log_aws_cyi_infrastructure_message "$${1}" "download_scripts.sh" "$${PID}" "$${@:2}" "Running as: ,$USER"
+        log_cyi_message "$${1}" "download_scripts.sh" "$${PID}" "$${@:2}" "Running as: ,$USER"
     }
 
     log_wrapper_message "Downloading & install latest bootstrap and steps scripts"

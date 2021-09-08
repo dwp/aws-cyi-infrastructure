@@ -2,14 +2,14 @@
 
 source /opt/shared/common_logging.sh
 
-log_aws_cyi_infrastructure_message() {
+log_cyi_message() {
     set +u
 
     message="${1}"
     component="${2}"
     process_id="${3}"
 
-    application="aws_cyi_infrastructure"
+    application="cyi"
 
     app_version="NOT_SET"
     if [ -f "/opt/emr/version" ]; then

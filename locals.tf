@@ -27,7 +27,7 @@ locals {
     for-use-with-amazon-emr-managed-policies = "true"
   }
 
-  emr_cluster_name       = "aws-cyi-infrastructure"
+  emr_cluster_name       = "cyi"
   env_certificate_bucket = "dw-${local.environment}-public-certificates"
   mgt_certificate_bucket = "dw-${local.management_account[local.environment]}-public-certificates"
   dks_endpoint           = data.terraform_remote_state.crypto.outputs.dks_endpoint[local.environment]
