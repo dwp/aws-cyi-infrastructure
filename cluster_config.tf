@@ -32,7 +32,7 @@ resource "aws_s3_bucket_object" "instances" {
       add_master_sg      = aws_security_group.aws_cyi_infrastructure_common.id
       add_slave_sg       = aws_security_group.aws_cyi_infrastructure_common.id
       subnet_id = (
-        data.terraform_remote_state.internal_compute.outputs.aws_cyi_infrastructure_subnet.subnets[index(data.terraform_remote_state.internal_compute.outputs.aws_cyi_infrastructure_subnet.subnets.*.availability_zone, local.emr_subnet_region)].id
+        data.terraform_remote_state.internal_compute.outputs.cyi_subnet.subnets[index(data.terraform_remote_state.internal_compute.outputs.cyi_subnet.subnets.*.availability_zone, local.emr_subnet_region)].id
       )
       master_sg                           = aws_security_group.aws_cyi_infrastructure_master.id
       slave_sg                            = aws_security_group.aws_cyi_infrastructure_slave.id

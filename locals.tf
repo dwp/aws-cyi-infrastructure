@@ -85,8 +85,8 @@ locals {
   data_pipeline_metadata = data.terraform_remote_state.internal_compute.outputs.data_pipeline_metadata_dynamo.name
 
 
-  cyi_db                  = "uc_cyi"
-  hive_metastore_location = "data/uc_cyi"
+  cyi_db                  = "cyi"
+  hive_metastore_location = "data/cyi"
   serde                   = "org.openx.data.jsonserde.JsonSerDe"
   data_path               = "analytical-dataset/full/"
   cyi_scripts_location    = "/opt/emr/dataworks-cyi"
