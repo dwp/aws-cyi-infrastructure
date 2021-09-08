@@ -1,26 +1,26 @@
 jobs:
-  - name: aws-emr-template-repository-prod
+  - name: aws-cyi-infrastructure-prod
     max_in_flight: 1
     plan:
       - in_parallel:
-          - get: aws-emr-template-repository
+          - get: aws-cyi-infrastructure
             trigger: true
             passed:
-              - aws-emr-template-repository-preprod
+              - aws-cyi-infrastructure-preprod
           - get: emr-launcher-release
             version: { tag: ((emr-launcher-version.production)) }
             trigger: true
             passed:
-            - aws-emr-template-repository-preprod
+            - aws-cyi-infrastructure-preprod
           - get: emr-relauncher-release
             version: { tag: ((emr-relauncher-version.production)) }
             trigger: true
             passed:
-            - aws-emr-template-repository-preprod
+            - aws-cyi-infrastructure-preprod
           - get: al2-emr-ami
             trigger: true
             passed:
-            - aws-emr-template-repository-preprod
+            - aws-cyi-infrastructure-preprod
       - .: (( inject meta.plan.terraform-bootstrap ))
         config:
           params:

@@ -1,15 +1,15 @@
 groups:
   - name: master
     jobs:
-      - aws-emr-template-repository-dev
-      - aws-emr-template-repository-qa
-      - aws-emr-template-repository-int
-      - aws-emr-template-repository-preprod
-      - aws-emr-template-repository-prod
+      - aws-cyi-infrastructure-dev
+      - aws-cyi-infrastructure-qa
+      - aws-cyi-infrastructure-int
+      - aws-cyi-infrastructure-preprod
+      - aws-cyi-infrastructure-prod
 
   - name: pull-request
     jobs:
-      - aws-emr-template-repository-pr
+      - aws-cyi-infrastructure-pr
 
   - name: update-pipeline
     jobs:

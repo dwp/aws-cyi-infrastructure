@@ -1,6 +1,6 @@
-resource "aws_cloudwatch_event_rule" "aws_emr_template_repository_failed" {
+resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_failed" {
   name          = "${local.emr_cluster_name}_failed"
-  description   = "Sends failed message to slack when aws_emr_template_repository cluster terminates with errors"
+  description   = "Sends failed message to slack when aws_cyi_infrastructure cluster terminates with errors"
   event_pattern = <<EOF
 {
   "source": [
@@ -25,9 +25,9 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_event_rule" "aws_emr_template_repository_terminated" {
+resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_terminated" {
   name          = "${local.emr_cluster_name}_terminated"
-  description   = "Sends failed message to slack when aws_emr_template_repository cluster terminates by user request"
+  description   = "Sends failed message to slack when aws_cyi_infrastructure cluster terminates by user request"
   event_pattern = <<EOF
 {
   "source": [
@@ -55,7 +55,7 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_event_rule" "aws_emr_template_repository_success" {
+resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_success" {
   name          = "${local.emr_cluster_name}_success"
   description   = "checks that all steps complete"
   event_pattern = <<EOF
@@ -85,7 +85,7 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_event_rule" "aws_emr_template_repository_success_with_errors" {
+resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_success_with_errors" {
   name          = "${local.emr_cluster_name}_succes_with_errors"
   description   = "checks that all mandatory steps complete but with failures on non mandatory steps"
   event_pattern = <<EOF
@@ -115,9 +115,9 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_event_rule" "aws_emr_template_repository_running" {
+resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_running" {
   name          = "${local.emr_cluster_name}_running"
-  description   = "checks that aws_emr_template_repository is running"
+  description   = "checks that aws_cyi_infrastructure is running"
   event_pattern = <<EOF
 {
   "source": [
@@ -142,8 +142,8 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_failed" {
-  count                     = local.aws_emr_template_repository_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_failed" {
+  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_failed"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -156,7 +156,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_failed" {
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_emr_template_repository_failed.name
+    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_failed.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_failed",
@@ -165,8 +165,8 @@ resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_failed" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_terminated" {
-  count                     = local.aws_emr_template_repository_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_terminated" {
+  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_terminated"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -179,7 +179,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_terminated" 
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_emr_template_repository_terminated.name
+    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_terminated.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_terminated",
@@ -188,8 +188,8 @@ resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_terminated" 
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_success" {
-  count                     = local.aws_emr_template_repository_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success" {
+  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_success"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -198,11 +198,11 @@ resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_success" {
   period                    = "60"
   statistic                 = "Sum"
   threshold                 = "1"
-  alarm_description         = "Monitoring aws_emr_template_repository completion"
+  alarm_description         = "Monitoring aws_cyi_infrastructure completion"
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_emr_template_repository_success.name
+    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_success.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_success",
@@ -211,8 +211,8 @@ resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_success" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_success_with_errors" {
-  count                     = local.aws_emr_template_repository_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success_with_errors" {
+  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_success_with_errors"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -221,11 +221,11 @@ resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_success_with
   period                    = "60"
   statistic                 = "Sum"
   threshold                 = "1"
-  alarm_description         = "Monitoring aws_emr_template_repository completion"
+  alarm_description         = "Monitoring aws_cyi_infrastructure completion"
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_emr_template_repository_success_with_errors.name
+    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_success_with_errors.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_success_with_errors",
@@ -234,8 +234,8 @@ resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_success_with
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_running" {
-  count                     = local.aws_emr_template_repository_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_running" {
+  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_running"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -244,11 +244,11 @@ resource "aws_cloudwatch_metric_alarm" "aws_emr_template_repository_running" {
   period                    = "60"
   statistic                 = "Sum"
   threshold                 = "1"
-  alarm_description         = "Monitoring aws_emr_template_repository running"
+  alarm_description         = "Monitoring aws_cyi_infrastructure running"
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_emr_template_repository_running.name
+    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_running.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_running",

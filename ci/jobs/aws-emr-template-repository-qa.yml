@@ -1,12 +1,12 @@
 jobs:
-  - name: aws-emr-template-repository-qa
+  - name: aws-cyi-infrastructure-qa
     max_in_flight: 1
     serial_groups: [qa-applies]
     plan:
       - in_parallel:
           - put: meta
             resource: meta-qa
-          - get: aws-emr-template-repository
+          - get: aws-cyi-infrastructure
             trigger: true
           - get: emr-launcher-release
             version: { tag: ((emr-launcher-version.qa)) }

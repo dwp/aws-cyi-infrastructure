@@ -1,8 +1,8 @@
 jobs:
   - name: update-pipeline
     plan:
-      - get: aws-emr-template-repository
-        resource: aws-emr-template-repository-pipeline
+      - get: aws-cyi-infrastructure
+        resource: aws-cyi-infrastructure-pipeline
         trigger: true
       - task: aviator
         config:
@@ -21,12 +21,12 @@ jobs:
                 /usr/bin/aviator -f aviator.yml
                 mv aviator_pipeline.yml ../pipeline
                 mv ci/vars.yml ../pipeline
-            dir: aws-emr-template-repository
+            dir: aws-cyi-infrastructure
           inputs:
-            - name: aws-emr-template-repository
+            - name: aws-cyi-infrastructure
           outputs:
             - name: pipeline
-      - set_pipeline: aws-emr-template-repository
+      - set_pipeline: aws-cyi-infrastructure
         file: pipeline/aviator_pipeline.yml
         var_files:
           - pipeline/vars.yml
