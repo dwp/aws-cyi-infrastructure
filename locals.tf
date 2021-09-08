@@ -11,7 +11,7 @@ locals {
     development = "True"
     qa          = "False"
     integration = "True"
-    preprod     = "False"
+    preprod     = "False"ebs_emrfs_em
     production  = "False"
   }
 

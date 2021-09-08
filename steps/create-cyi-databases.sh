@@ -15,7 +15,7 @@ set -Eeuo pipefail
     S3_PREFIX="$6"
     EXPORT_DATE="$8"
 
-    echo "$CORRELATION_ID"        /opt/emr/correlation_id.txt
+    echo "$CORRELATION_ID" >>     /opt/emr/correlation_id.txt
     echo "$S3_BUCKET" >>          /opt/emr/s3_bucket.txt
     echo "$S3_PREFIX" >>          /opt/emr/s3_prefix.txt
     echo "$EXPORT_DATE" >>        /opt/emr/export_date.txt
