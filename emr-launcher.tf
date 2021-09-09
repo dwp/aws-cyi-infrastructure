@@ -183,7 +183,7 @@ resource "aws_sns_topic_subscription" "aws_cyi_infrastructure_trigger_sns" {
 
 resource "aws_lambda_event_source_mapping" "event_source_mapping" {
   batch_size        = 1
-  event_source_arn  = data.terraform_remote_state.ingest.outputs.cyi_fileshare.arn
+  event_source_arn  = data.terraform_remote_state.ingest.outputs.cyi_fileshare_sqs.arn
   enabled           = true
   function_name     = aws_lambda_function.aws_cyi_infrastructure_emr_launcher.arn
 }
@@ -201,7 +201,7 @@ resource "aws_lambda_permission" "aws_cyi_infrastructure_emr_launcher_sqs_subscr
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.aws_cyi_infrastructure_emr_launcher.function_name
   principal     = "sqs.amazonaws.com"
-  source_arn    = data.terraform_remote_state.ingest.outputs.cyi_fileshare.arn
+  source_arn    = data.terraform_remote_state.ingest.outputs.cyi_fileshare_sqs.arn
 }
 
 resource "aws_iam_policy" "aws_cyi_infrastructure_emr_launcher_getsecrets" {
