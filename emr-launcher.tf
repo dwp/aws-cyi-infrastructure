@@ -35,6 +35,8 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_launcher" {
     Name    = "${local.emr_cluster_name}_emr_launcher"
     Version = var.emr_launcher_zip["version"]
   }
+
+  depends_on = [aws_cloudwatch_log_group.aws_cyi_infrastructure_emr_launcher_log_group]
 }
 
 resource "aws_iam_role" "aws_cyi_infrastructure_emr_launcher_lambda_role" {
@@ -207,4 +209,9 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_getsecrets" 
 resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_getsecrets" {
   role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
   policy_arn = aws_iam_policy.aws_cyi_infrastructure_emr_launcher_getsecrets.arn
+}
+
+resource "aws_cloudwatch_log_group" "aws_cyi_infrastructure_emr_launcher_log_group" {
+  name              = "/aws/lambda/cyi_emr_launcher"
+  retention_in_days = 180
 }
