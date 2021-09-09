@@ -36,6 +36,8 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_relauncher" {
     Name    = "aws_cyi_infrastructure_emr_relauncher",
     Version = var.dataworks_emr_relauncher_zip["version"]
   }
+
+  depends_on = [aws_cloudwatch_log_group.aws_cyi_infrastructure_emr_relauncher_log_group]
 }
 
 resource "aws_cloudwatch_event_target" "aws_cyi_infrastructure_emr_relauncher_target" {
@@ -160,4 +162,9 @@ resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_relauncher
 resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_relauncher_scan_dynamo_attachment" {
   role       = aws_iam_role.aws_cyi_infrastructure_emr_relauncher_lambda_role.name
   policy_arn = aws_iam_policy.aws_cyi_infrastructure_emr_relauncher_scan_dynamo_policy.arn
+}
+
+resource "aws_cloudwatch_log_group" "aws_cyi_infrastructure_emr_relauncher_log_group" {
+  name              = "/aws/lambda/cyi_emr_relauncher"
+  retention_in_days = 180
 }
