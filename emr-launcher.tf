@@ -65,7 +65,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_read_s3_poli
       "s3:GetObject",
     ]
     resources = [
-      format("arn:aws:s3:::%s/emr/aws_cyi_infrastructure/*", data.terraform_remote_state.common.outputs.config_bucket.id)
+      format("arn:aws:s3:::%s/emr/cyi/*", data.terraform_remote_state.common.outputs.config_bucket.id)
     ]
   }
   statement {
