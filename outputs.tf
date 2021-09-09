@@ -1,8 +1,10 @@
-output "aws_cyi_infrastructure_common_sg" {
-  value = aws_security_group.aws_cyi_infrastructure_common
+output "aws_cyi_common_sg" {
+  value = {
+    id = aws_security_group.aws_cyi_infrastructure_common.id
+  }
 }
 
-output "aws_cyi_infrastructure_emr_launcher_lambda" {
+output "cyi_emr_launcher_lambda" {
   value = aws_lambda_function.aws_cyi_infrastructure_emr_launcher
 }
 
