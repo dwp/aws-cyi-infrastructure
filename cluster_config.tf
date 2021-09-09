@@ -3,11 +3,6 @@ resource "aws_emr_security_configuration" "ebs_emrfs_em" {
   configuration = jsonencode(local.ebs_emrfs_em)
 }
 
-#TODO remove this
-output "security_configuration" {
-  value = aws_emr_security_configuration.ebs_emrfs_em
-}
-
 resource "aws_s3_bucket_object" "cluster" {
   bucket = data.terraform_remote_state.common.outputs.config_bucket.id
   key    = "emr/aws_cyi_infrastructure/cluster.yaml"
@@ -37,9 +32,7 @@ resource "aws_s3_bucket_object" "instances" {
       add_master_sg      = aws_security_group.aws_cyi_infrastructure_common.id
       add_slave_sg       = aws_security_group.aws_cyi_infrastructure_common.id
       subnet_id = (
-        local.use_capacity_reservation[local.environment] == true ?
-        data.terraform_remote_state.internal_compute.outputs.aws_cyi_infrastructure_subnet.subnets[index(data.terraform_remote_state.internal_compute.outputs.aws_cyi_infrastructure_subnet.subnets.*.availability_zone, data.terraform_remote_state.common.outputs.ec2_capacity_reservations.emr_m5_16_x_large_2a.availability_zone)].id :
-        data.terraform_remote_state.internal_compute.outputs.aws_cyi_infrastructure_subnet.subnets[index(data.terraform_remote_state.internal_compute.outputs.aws_cyi_infrastructure_subnet.subnets.*.availability_zone, local.emr_subnet_non_capacity_reserved_environments)].id
+        data.terraform_remote_state.internal_compute.outputs.cyi_subnet.subnets[index(data.terraform_remote_state.internal_compute.outputs.cyi_subnet.subnets.*.availability_zone, local.emr_subnet_region)].id
       )
       master_sg                           = aws_security_group.aws_cyi_infrastructure_master.id
       slave_sg                            = aws_security_group.aws_cyi_infrastructure_slave.id
@@ -85,14 +78,30 @@ resource "aws_s3_bucket_object" "configurations" {
       proxy_https_host                              = data.terraform_remote_state.internal_compute.outputs.internet_proxy.host
       proxy_https_port                              = data.terraform_remote_state.internal_compute.outputs.internet_proxy.port
       environment                                   = local.environment
-      hive_tez_container_size                       = var.hive_tez_container_size
-      hive_tez_java_opts                            = var.hive_tez_java_opts
-      hive_auto_convert_join_noconditionaltask_size = var.hive_auto_convert_join_noconditionaltask_size
-      tez_grouping_min_size                         = var.tez_grouping_min_size
-      tez_grouping_max_size                         = var.tez_grouping_max_size
-      tez_am_resource_memory_mb                     = var.tez_am_resource_memory_mb
-      tez_am_launch_cmd_opts                        = var.tez_am_launch_cmd_opts
-      tez_runtime_io_sort_mb                        = var.tez_runtime_io_sort_mb
+      hive_tez_container_size                       = local.hive_tez_container_size[local.environment]
+      hive_tez_java_opts                            = local.hive_tez_java_opts[local.environment]
+      hive_auto_convert_join_noconditionaltask_size = local.hive_auto_convert_join_noconditionaltask_size[local.environment]
+      tez_grouping_min_size                         = local.tez_grouping_min_size[local.environment]
+      tez_grouping_max_size                         = local.tez_grouping_max_size[local.environment]
+      tez_am_resource_memory_mb                     = local.tez_am_resource_memory_mb[local.environment]
+      tez_am_launch_cmd_opts                        = local.tez_am_launch_cmd_opts[local.environment]
+      tez_runtime_io_sort_mb                        = local.tez_runtime_io_sort_mb[local.environment]
+      tez_runtime_unordered_output_buffer_size_mb   = local.tez_runtime_unordered_output_buffer_size_mb[local.environment]
+      hive_metsatore_username                       = data.terraform_remote_state.internal_compute.outputs.metadata_store_users.cyi_writer.username
+      hive_metastore_pwd                            = data.terraform_remote_state.internal_compute.outputs.metadata_store_users.cyi_writer.secret_name
+      hive_metastore_endpoint                       = data.terraform_remote_state.internal_compute.outputs.hive_metastore_v2.endpoint
+      hive_metastore_database_name                  = data.terraform_remote_state.internal_compute.outputs.hive_metastore_v2.database_name
+      hive_metastore_location                       = local.hive_metastore_location
+      s3_published_bucket                           = data.terraform_remote_state.common.outputs.published_bucket.id
+      s3_processed_bucket                           = data.terraform_remote_state.common.outputs.processed_bucket.id
+      hive_bytes_per_reducer                        = local.hive_bytes_per_reducer[local.environment]
+      hive_tez_sessions_per_queue                   = local.hive_tez_sessions_per_queue[local.environment]
+      llap_number_of_instances                      = local.llap_number_of_instances[local.environment]
+      llap_daemon_yarn_container_mb                 = local.llap_daemon_yarn_container_mb[local.environment]
+      hive_auto_convert_join_noconditionaltask_size = local.hive_auto_convert_join_noconditionaltask_size[local.environment]
+      hive_max_reducers                             = local.hive_max_reducers[local.environment]
+      map_reduce_vcores_per_task                    = local.map_reduce_vcores_per_task[local.environment]
+      map_reduce_vcores_per_node                    = local.map_reduce_vcores_per_node[local.environment]
     }
   )
   tags = {

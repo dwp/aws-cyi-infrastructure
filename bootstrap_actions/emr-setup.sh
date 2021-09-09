@@ -10,7 +10,7 @@ chmod u+x /opt/emr/cloudwatch.sh
     source /opt/emr/logging.sh
     
     function log_wrapper_message() {
-        log_aws_cyi_infrastructure_message "$${1}" "emr-setup.sh" "$${PID}" "$${@:2}" "Running as: ,$USER"
+        log_cyi_message "$${1}" "emr-setup.sh" "$${PID}" "$${@:2}" "Running as: ,$USER"
     }
     log_wrapper_message "Setting up the Proxy"
 
@@ -76,7 +76,7 @@ EOF
     --truststore-password "$TRUSTSTORE_PASSWORD" \
     --truststore-aliases "${truststore_aliases}" \
     --truststore-certs "${truststore_certs}" \
-    --jks-only true >> /var/log/aws-cyi-infrastructure/acm-cert-retriever.log 2>&1
+    --jks-only true >> /var/log/cyi/acm-cert-retriever.log 2>&1
     
     #shellcheck disable=SC2024
     sudo -E acm-cert-retriever \
@@ -84,7 +84,7 @@ EOF
     --acm-key-passphrase "$ACM_KEY_PASSWORD" \
     --private-key-alias "${private_key_alias}" \
     --truststore-aliases "${truststore_aliases}" \
-    --truststore-certs "${truststore_certs}"  >> /var/log/aws-cyi-infrastructure/acm-cert-retriever.log 2>&1 # No sudo needed to write to file, so redirect is fine
+    --truststore-certs "${truststore_certs}"  >> /var/log/cyi/acm-cert-retriever.log 2>&1 # No sudo needed to write to file, so redirect is fine
     
     cd /etc/pki/ca-trust/source/anchors/ || exit
 
@@ -119,4 +119,4 @@ EOF
     
     log_wrapper_message "Completed the emr-setup.sh step of the EMR Cluster"
 
-) >> /var/log/aws-cyi-infrastructure/emr-setup.log 2>&1
+) >> /var/log/cyi/emr-setup.log 2>&1

@@ -26,13 +26,14 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_launcher" {
   environment {
     variables = {
       EMR_LAUNCHER_CONFIG_S3_BUCKET = data.terraform_remote_state.common.outputs.config_bucket.id
-      EMR_LAUNCHER_CONFIG_S3_FOLDER = "emr/aws_cyi_infrastructure"
+      EMR_LAUNCHER_CONFIG_S3_FOLDER = "emr/cyi"
       EMR_LAUNCHER_LOG_LEVEL        = "debug"
     }
   }
 
   tags = {
-    Name = "${local.emr_cluster_name}_emr_launcher"
+    Name    = "${local.emr_cluster_name}_emr_launcher"
+    Version = var.emr_launcher_zip["version"]
   }
 }
 
@@ -46,7 +47,7 @@ resource "aws_iam_role" "aws_cyi_infrastructure_emr_launcher_lambda_role" {
 
 data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_assume_policy" {
   statement {
-    sid     = "aws-cyi-infrastructure-EMRLauncherLambdaAssumeRolePolicy"
+    sid     = "cyiEMRLauncherLambdaAssumeRolePolicy"
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
 
@@ -75,6 +76,16 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_read_s3_poli
     resources = [
       data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
     ]
+  }
+}
+
+data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "sqs:ReceiveMessage",
+    ]
+    resources = ["*"]
   }
 }
 
@@ -109,6 +120,15 @@ resource "aws_iam_policy" "aws_cyi_infrastructure_emr_launcher_read_s3_policy" {
   policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_emr_launcher_read_s3_policy.json
   tags = {
     Name = "${local.emr_cluster_name}_emr_launcher_read_s3_policy"
+  }
+}
+
+resource "aws_iam_policy" "aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy" {
+  name        = "${local.emr_cluster_name}ReadSQS"
+  description = "Allow aws_cyi_infrastructure to receive SQS messages"
+  policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy.json
+  tags = {
+    Name = "${local.emr_cluster_name}_emr_launcher_receive_sqs_message_policy"
   }
 }
 
@@ -179,7 +199,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_getsecrets" 
     ]
 
     resources = [
-      data.terraform_remote_state.internal_compute.outputs.metadata_store_users.aws_cyi_infrastructure_writer.secret_arn,
+      data.terraform_remote_state.internal_compute.outputs.metadata_store_users.cyi_writer.secret_arn,
     ]
   }
 }

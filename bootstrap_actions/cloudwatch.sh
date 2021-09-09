@@ -48,45 +48,51 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<CWAGEN
             "timezone": "UTC"
           },
           {
-            "file_path": "/var/log/aws-cyi-infrastructure/acm-cert-retriever.log",
+            "file_path": "/var/log/cyi/acm-cert-retriever.log",
             "log_group_name": "$${cwa_bootstrap_loggrp_name}",
             "log_stream_name": "{instance_id}-acm-cert-retriever.log",
             "timezone": "UTC"
           },
           {
-            "file_path": "/var/log/aws-cyi-infrastructure/emr-setup.log",
+            "file_path": "/var/log/cyi/emr-setup.log",
             "log_group_name": "$${cwa_bootstrap_loggrp_name}",
             "log_stream_name": "{instance_id}-emr-setup.log",
             "timezone": "UTC"
           },
           {
-            "file_path": "/var/log/aws-cyi-infrastructure/download_scripts.log",
+            "file_path": "/var/log/cyi/download_scripts.log",
             "log_group_name": "$${cwa_bootstrap_loggrp_name}",
             "log_stream_name": "{instance_id}-download-scripts.log",
             "timezone": "UTC"
           },
           {
-            "file_path": "/var/log/aws-cyi-infrastructure/download_sql.log",
+            "file_path": "/var/log/cyi/download_sql.log",
             "log_group_name": "$${cwa_bootstrap_loggrp_name}",
             "log_stream_name": "{instance_id}-download-sql.log",
             "timezone": "UTC"
           },
           {
-            "file_path": "/var/log/aws-cyi-infrastructure/metrics_setup.log",
+            "file_path": "/var/log/cyi/metrics_setup.log",
             "log_group_name": "$${cwa_bootstrap_loggrp_name}",
             "log_stream_name": "{instance_id}-metrics-setup.log",
             "timezone": "UTC"
           },
           {
-            "file_path": "/var/log/aws-cyi-infrastructure/status_metrics.log",
+            "file_path": "/var/log/cyi/status_metrics.log",
             "log_group_name": "$${cwa_bootstrap_loggrp_name}",
             "log_stream_name": "{instance_id}-status-metrics.log",
             "timezone": "UTC"
           },
           {
-            "file_path": "/var/log/aws-cyi-infrastructure/update_dynamo.log",
+            "file_path": "/var/log/cyi/update_dynamo.log",
             "log_group_name": "$${cwa_bootstrap_loggrp_name}",
             "log_stream_name": "{instance_id}-update-dynamo.log",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/var/log/cyi/create_cyi_databases.log",
+            "log_group_name": "$${cwa_steps_loggrp_name}",
+            "log_stream_name": "{instance_id}-create-cyi-databases.log",
             "timezone": "UTC"
           }
         ]
