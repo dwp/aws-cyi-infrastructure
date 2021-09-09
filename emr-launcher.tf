@@ -84,6 +84,8 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_receive_sqs_
     effect = "Allow"
     actions = [
       "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes"
     ]
     resources = [data.terraform_remote_state.ingest.outputs.cyi_fileshare_sqs.arn]
   }
