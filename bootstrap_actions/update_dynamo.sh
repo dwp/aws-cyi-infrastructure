@@ -182,4 +182,4 @@
   #kick off loop to process all step files
   check_step_dir
 
-) >> /var/log/aws-cyi-infrastructure/update_dynamo.log 2>&1
+) >> /var/log/cyi/update_dynamo.log 2>&1

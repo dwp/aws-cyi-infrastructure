@@ -26,7 +26,7 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_launcher" {
   environment {
     variables = {
       EMR_LAUNCHER_CONFIG_S3_BUCKET = data.terraform_remote_state.common.outputs.config_bucket.id
-      EMR_LAUNCHER_CONFIG_S3_FOLDER = "emr/aws_cyi_infrastructure"
+      EMR_LAUNCHER_CONFIG_S3_FOLDER = "emr/cyi"
       EMR_LAUNCHER_LOG_LEVEL        = "debug"
     }
   }

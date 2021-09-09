@@ -26,4 +26,4 @@ set -Eeuo pipefail
 
     log_wrapper_message "Finished creating cyi Databases"
 
-) >> /var/log/aws-cyi/create-cyi-databases.log 2>&1
+) >> /var/log/cyi/create_cyi_databases.log 2>&1

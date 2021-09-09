@@ -49,8 +49,8 @@
   push_metric() {
     log_wrapper_message "Sending to push gateway with value $1"
 
-    cat << EOF | curl --data-binary @- "http://${aws_cyi_infrastructure_pushgateway_hostname}:9091/metrics/job/aws_cyi_infrastructure"
-                aws_cyi_infrastructure_status{snapshot_type="$SNAPSHOT_TYPE", export_date="$EXPORT_DATE", cluster_id="$CLUSTER_ID", component="aws_cyi_infrastructure", correlation_id="$CORRELATION_ID"} $1
+    cat << EOF | curl --data-binary @- "http://${aws_cyi_infrastructure_pushgateway_hostname}:9091/metrics/job/cyi"
+                aws_cyi_infrastructure_status{snapshot_type="$SNAPSHOT_TYPE", export_date="$EXPORT_DATE", cluster_id="$CLUSTER_ID", component="cyi", correlation_id="$CORRELATION_ID"} $1
 EOF
   }
 
@@ -102,4 +102,4 @@ EOF
   #kick off loop to process all step files
   check_step_dir
 
-) >> /var/log/aws-cyi-infrastructure/status_metrics.log 2>&1
+) >> /var/log/cyi/status_metrics.log 2>&1

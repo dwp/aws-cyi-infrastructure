@@ -138,13 +138,13 @@ locals {
     production  = "TERMINATE_CLUSTER"
   }
 
-  cw_agent_namespace                   = "/app/aws_cyi_infrastructure"
-  cw_agent_log_group_name              = "/app/aws_cyi_infrastructure"
-  cw_agent_bootstrap_loggrp_name       = "/app/aws_cyi_infrastructure/bootstrap_actions"
-  cw_agent_steps_loggrp_name           = "/app/aws_cyi_infrastructure/step_logs"
+  cw_agent_namespace                   = "/app/cyi"
+  cw_agent_log_group_name              = "/app/cyi"
+  cw_agent_bootstrap_loggrp_name       = "/app/cyi/bootstrap_actions"
+  cw_agent_steps_loggrp_name           = "/app/cyi/step_logs"
   cw_agent_metrics_collection_interval = 60
 
-  s3_log_prefix = "emr/aws_cyi_infrastructure"
+  s3_log_prefix = "emr/cyi"
 
   dynamodb_final_step = {
     development = "temp"

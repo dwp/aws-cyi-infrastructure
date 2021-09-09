@@ -38,4 +38,4 @@ chmod u+x /opt/emr/logging.sh
 
     log_wrapper_message "Script downloads completed"
 
-)  >> /var/log/aws-cyi-infrastructure/download_scripts.log 2>&1
+)  >> /var/log/cyi/download_scripts.log 2>&1
