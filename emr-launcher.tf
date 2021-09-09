@@ -212,6 +212,6 @@ resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_g
 }
 
 resource "aws_cloudwatch_log_group" "aws_cyi_infrastructure_emr_launcher_log_group" {
-  name = "/aws/lambda/cyi_emr_launcher"
+  name              = "/aws/lambda/cyi_emr_launcher"
   retention_in_days = 180
 }
