@@ -89,7 +89,8 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_receive_sqs_
       "sqs:DeleteMessage",
       "sqs:GetQueueAttributes"
     ]
-    resources = [data.terraform_remote_state.ingest.outputs.cyi_fileshare_sqs.arn]
+    resources = [
+      data.terraform_remote_state.ingest.outputs.cyi_fileshare_aws_sqs.arn]
   }
 }
 
@@ -174,6 +175,11 @@ resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_p
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
+resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_basic_execution" {
+  role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
 resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_read_sqs_execution" {
   role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
   policy_arn = aws_iam_policy.aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy.arn
@@ -187,7 +193,7 @@ resource "aws_sns_topic_subscription" "aws_cyi_infrastructure_trigger_sns" {
 
 resource "aws_lambda_event_source_mapping" "event_source_mapping" {
   batch_size        = 1
-  event_source_arn  = data.terraform_remote_state.ingest.outputs.cyi_fileshare_sqs.arn
+  event_source_arn  = data.terraform_remote_state.ingest.outputs.cyi_fileshare_aws_sqs.arn
   enabled           = true
   function_name     = aws_lambda_function.aws_cyi_infrastructure_emr_launcher.arn
 }
@@ -205,7 +211,7 @@ resource "aws_lambda_permission" "aws_cyi_infrastructure_emr_launcher_sqs_subscr
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.aws_cyi_infrastructure_emr_launcher.function_name
   principal     = "sqs.amazonaws.com"
-  source_arn    = data.terraform_remote_state.ingest.outputs.cyi_fileshare_sqs.arn
+  source_arn    = data.terraform_remote_state.ingest.outputs.cyi_fileshare_aws_sqs.arn
 }
 
 resource "aws_iam_policy" "aws_cyi_infrastructure_emr_launcher_getsecrets" {
