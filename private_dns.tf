@@ -4,7 +4,7 @@ data "aws_secretsmanager_secret_version" "terraform_secrets" {
 }
 
 resource "aws_service_discovery_service" "aws_cyi_infrastructure_services" {
-  name = "aws_cyi_infrastructure-pushgateway"
+  name = "cyi-pushgateway"
 
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.aws_cyi_infrastructure_services.id
@@ -21,7 +21,7 @@ resource "aws_service_discovery_service" "aws_cyi_infrastructure_services" {
 }
 
 resource "aws_service_discovery_private_dns_namespace" "aws_cyi_infrastructure_services" {
-  name = "${local.environment}.aws_cyi_infrastructure.services.${jsondecode(data.aws_secretsmanager_secret_version.terraform_secrets.secret_binary)["dataworks_domain_name"]}"
+  name = "${local.environment}.cyi.services.${jsondecode(data.aws_secretsmanager_secret_version.terraform_secrets.secret_binary)["dataworks_domain_name"]}"
   vpc  = data.terraform_remote_state.internal_compute.outputs.vpc.vpc.vpc.id
   tags = {
     Name = "aws_cyi_infrastructure_services"
