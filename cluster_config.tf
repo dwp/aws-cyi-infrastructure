@@ -85,8 +85,6 @@ resource "aws_s3_bucket_object" "configurations" {
       tez_grouping_max_size                         = local.tez_grouping_max_size[local.environment]
       tez_am_resource_memory_mb                     = local.tez_am_resource_memory_mb[local.environment]
       tez_am_launch_cmd_opts                        = local.tez_am_launch_cmd_opts[local.environment]
-      tez_runtime_io_sort_mb                        = local.tez_runtime_io_sort_mb[local.environment]
-      tez_runtime_unordered_output_buffer_size_mb   = local.tez_runtime_unordered_output_buffer_size_mb[local.environment]
       hive_metsatore_username                       = data.terraform_remote_state.internal_compute.outputs.metadata_store_users.cyi_writer.username
       hive_metastore_pwd                            = data.terraform_remote_state.internal_compute.outputs.metadata_store_users.cyi_writer.secret_name
       hive_metastore_endpoint                       = data.terraform_remote_state.internal_compute.outputs.hive_metastore_v2.endpoint
@@ -94,14 +92,16 @@ resource "aws_s3_bucket_object" "configurations" {
       hive_metastore_location                       = local.hive_metastore_location
       s3_published_bucket                           = data.terraform_remote_state.common.outputs.published_bucket.id
       s3_processed_bucket                           = data.terraform_remote_state.common.outputs.processed_bucket.id
-      hive_bytes_per_reducer                        = local.hive_bytes_per_reducer[local.environment]
       hive_tez_sessions_per_queue                   = local.hive_tez_sessions_per_queue[local.environment]
-      llap_number_of_instances                      = local.llap_number_of_instances[local.environment]
-      llap_daemon_yarn_container_mb                 = local.llap_daemon_yarn_container_mb[local.environment]
-      hive_auto_convert_join_noconditionaltask_size = local.hive_auto_convert_join_noconditionaltask_size[local.environment]
-      hive_max_reducers                             = local.hive_max_reducers[local.environment]
-      map_reduce_vcores_per_task                    = local.map_reduce_vcores_per_task[local.environment]
-      map_reduce_vcores_per_node                    = local.map_reduce_vcores_per_node[local.environment]
+      s3_htme_bucket                                = data.terraform_remote_state.internal_compute.outputs.htme_s3_bucket.id
+      spark_executor_cores                          = local.spark_executor_cores[local.environment]
+      spark_executor_memory                         = local.spark_executor_memory[local.environment]
+      spark_yarn_executor_memory_overhead           = local.spark_yarn_executor_memory_overhead[local.environment]
+      spark_driver_memory                           = local.spark_driver_memory[local.environment]
+      spark_driver_cores                            = local.spark_driver_cores[local.environment]
+      spark_executor_instances                      = local.spark_executor_instances
+      spark_default_parallelism                     = local.spark_default_parallelism
+      spark_kyro_buffer                             = local.spark_kyro_buffer
     }
   )
   tags = {

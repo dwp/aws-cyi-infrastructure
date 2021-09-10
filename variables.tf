@@ -19,8 +19,8 @@ variable "emr_instance_type_master" {
     development = "m5.xlarge"
     qa          = "m5.xlarge"
     integration = "m5.xlarge"
-    preprod     = "m5.4xlarge"
-    production  = "m5.4xlarge"
+    preprod     = "m5.12xlarge"
+    production  = "m5.12xlarge"
   }
 }
 
@@ -29,8 +29,8 @@ variable "emr_instance_type_core_one" {
     development = "m5.xlarge"
     qa          = "m5.xlarge"
     integration = "m5.xlarge"
-    preprod     = "m5.4xlarge"
-    production  = "m5.4xlarge"
+    preprod     = "m5.12xlarge"
+    production  = "m5.12xlarge"
   }
 }
 
@@ -40,8 +40,8 @@ variable "emr_core_instance_count" {
     development = "1"
     qa          = "1"
     integration = "1"
-    preprod     = "1"
-    production  = "1"
+    preprod     = "2"
+    production  = "2"
   }
 }
 
@@ -52,4 +52,24 @@ variable "emr_ami_id" {
 variable "region" {
   description = "AWS Region name"
   default     = "eu-west-2"
+}
+
+variable "spark_kyro_buffer" {
+  default = {
+    development = "128m"
+    qa          = "128m"
+    integration = "128m"
+    preprod     = "2047m"
+    production  = "2047m" # Max amount allowed
+  }
+}
+
+variable "spark_executor_instances" {
+  default = {
+    development = 50
+    qa          = 50
+    integration = 50
+    preprod     = 600
+    production  = 600 # More than possible as it won't create them if no core or memory available
+  }
 }
