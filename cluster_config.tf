@@ -93,7 +93,6 @@ resource "aws_s3_bucket_object" "configurations" {
       s3_published_bucket                           = data.terraform_remote_state.common.outputs.published_bucket.id
       s3_processed_bucket                           = data.terraform_remote_state.common.outputs.processed_bucket.id
       hive_tez_sessions_per_queue                   = local.hive_tez_sessions_per_queue[local.environment]
-      hive_max_reducers                             = local.hive_max_reducers[local.environment]
       s3_published_bucket                           = data.terraform_remote_state.common.outputs.published_bucket.id
       s3_htme_bucket                                = data.terraform_remote_state.internal_compute.outputs.htme_s3_bucket.id
     }
