@@ -154,7 +154,7 @@ resource "aws_cloudwatch_metric_alarm" "cyi_failed" {
   threshold                 = "1"
   alarm_description         = "This metric monitors cluster failed with errors"
   insufficient_data_actions = []
-  alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
+  #alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
     RuleName = aws_cloudwatch_event_rule.cyi_failed.name
   }
@@ -177,7 +177,7 @@ resource "aws_cloudwatch_metric_alarm" "cyi_terminated" {
   threshold                 = "1"
   alarm_description         = "This metric monitors cluster terminated by user request"
   insufficient_data_actions = []
-  alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
+  #alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
     RuleName = aws_cloudwatch_event_rule.cyi_terminated.name
   }
@@ -200,7 +200,7 @@ resource "aws_cloudwatch_metric_alarm" "cyi_success" {
   threshold                 = "1"
   alarm_description         = "Monitoring aws_cyi_infrastructure completion"
   insufficient_data_actions = []
-  alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
+  #alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
     RuleName = aws_cloudwatch_event_rule.cyi_success.name
   }
@@ -223,7 +223,7 @@ resource "aws_cloudwatch_metric_alarm" "cyi_success_with_errors" {
   threshold                 = "1"
   alarm_description         = "Monitoring aws_cyi_infrastructure completion"
   insufficient_data_actions = []
-  alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
+  #alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
     RuleName = aws_cloudwatch_event_rule.cyi_success_with_errors.name
   }
@@ -246,7 +246,7 @@ resource "aws_cloudwatch_metric_alarm" "cyi_running" {
   threshold                 = "1"
   alarm_description         = "Monitoring aws_cyi_infrastructure running"
   insufficient_data_actions = []
-  alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
+  #alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
     RuleName = aws_cloudwatch_event_rule.cyi_running.name
   }
