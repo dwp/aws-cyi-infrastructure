@@ -17,7 +17,6 @@
 
   STEP_DETAILS_DIR=/mnt/var/lib/info/steps
   CORRELATION_ID_FILE=/opt/emr/correlation_id.txt
-  SNAPSHOT_TYPE_FILE=/opt/emr/snapshot_type.txt
   EXPORT_DATE_FILE=/opt/emr/export_date.txt
 
   DATE=$(date '+%Y-%m-%d')
@@ -30,14 +29,14 @@
 
   FINAL_STEP_NAME="${dynamodb_final_step}"
 
-  while [[ ! -f "$SNAPSHOT_TYPE_FILE" ]] && [[ ! -f "$EXPORT_DATE_FILE" ]]
+  while [[ ! -f "$CORRELATION_ID_FILE" ]] && [[ ! -f "$EXPORT_DATE_FILE" ]]
   do
     sleep 5
   done
 
   CORRELATION_ID=$(cat $CORRELATION_ID_FILE)
-  SNAPSHOT_TYPE=$(cat $SNAPSHOT_TYPE_FILE)
   EXPORT_DATE=$(cat $EXPORT_DATE_FILE)
+  SNAPSHOT_TYPE="NOT_SET"
 
   if [[ -z "$EXPORT_DATE" ]]; then
     log_wrapper_message "Export date from file was empty, so defaulting to today's date"
