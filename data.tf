@@ -48,7 +48,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_write_data" {
 }
 
 resource "aws_iam_policy" "aws_cyi_infrastructure_write_data" {
-  name        = "AwsEMRWriteData"
+  name        = "AwsCYIEMRWriteData"
   description = "Allow writing of aws-emr-template files and metrics"
   policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_write_data.json
 }
