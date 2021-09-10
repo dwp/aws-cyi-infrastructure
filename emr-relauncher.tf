@@ -21,7 +21,7 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_relauncher" {
     )
   )
   publish = false
-  timeout = 60
+  timeout = 900
 
   environment {
     variables = {

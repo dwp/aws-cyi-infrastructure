@@ -21,7 +21,7 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_launcher" {
     )
   )
   publish = false
-  timeout = 60
+  timeout = 900
 
   environment {
     variables = {
@@ -194,6 +194,11 @@ resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_p
 resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_policy_execution" {
   role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_sqs" {
+  role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
+  policy_arn = aws_iam_policy.aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy.arn
 }
 
 resource "aws_lambda_event_source_mapping" "cyi_sqs_event_source_mapping" {
