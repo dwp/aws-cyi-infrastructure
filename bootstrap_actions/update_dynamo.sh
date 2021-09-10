@@ -18,7 +18,6 @@
   STEP_DETAILS_DIR=/mnt/var/lib/info/steps
   CORRELATION_ID_FILE=/opt/emr/correlation_id.txt
   S3_PREFIX_FILE=/opt/emr/s3_prefix.txt
-  SNAPSHOT_TYPE_FILE=/opt/emr/snapshot_type.txt
   OUTPUT_LOCATION_FILE=/opt/emr/output_location.txt
   EXPORT_DATE_FILE=/opt/emr/export_date.txt
 
@@ -33,15 +32,15 @@
 
   FINAL_STEP_NAME="${dynamodb_final_step}"
 
-  while [[ ! -f "$CORRELATION_ID_FILE" ]] && [[ ! -f "$S3_PREFIX_FILE" ]] && [[ ! -f "$SNAPSHOT_TYPE_FILE" ]] && [[ ! -f "$EXPORT_DATE_FILE" ]]
+  while [[ ! -f "$CORRELATION_ID_FILE" ]] && [[ ! -f "$S3_PREFIX_FILE" ]] && [[ ! -f "$EXPORT_DATE_FILE" ]]
   do
     sleep 5
   done
 
   CORRELATION_ID=$(cat $CORRELATION_ID_FILE)
   S3_PREFIX=$(cat $S3_PREFIX_FILE)
-  SNAPSHOT_TYPE=$(cat $SNAPSHOT_TYPE_FILE)
   EXPORT_DATE=$(cat $EXPORT_DATE_FILE)
+  SNAPSHOT_TYPE="NOT_SET"
   DATA_PRODUCT="CYI"
 
   if [[ -z "$EXPORT_DATE" ]]; then

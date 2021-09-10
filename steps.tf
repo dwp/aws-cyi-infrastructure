@@ -1,9 +1,9 @@
 #uploading of step files to s3 go here
-resource "aws_s3_bucket_object" "create_databases_sh" {
+resource "aws_s3_bucket_object" "create_cyi_database" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
-  key        = "component/cyi/create-cyi-databases.sh"
-  content = templatefile("${path.module}/steps/create-cyi-databases.sh",
+  key        = "component/cyi/create-cyi-database.sh"
+  content = templatefile("${path.module}/steps/create-cyi-database.sh",
     {
       cyi_db                  = local.cyi_db
       hive_metastore_location = local.hive_metastore_location

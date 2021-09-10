@@ -86,7 +86,7 @@ EOF
 }
 
 resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_success_with_errors" {
-  name          = "${local.emr_cluster_name}_succes_with_errors"
+  name          = "${local.emr_cluster_name}_success_with_errors"
   description   = "checks that all mandatory steps complete but with failures on non mandatory steps"
   event_pattern = <<EOF
 {

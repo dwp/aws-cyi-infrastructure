@@ -147,11 +147,11 @@ locals {
   s3_log_prefix = "emr/cyi"
 
   dynamodb_final_step = {
-    development = "temp"
-    qa          = "temp"
-    integration = "temp"
-    preprod     = "temp"
-    production  = "temp"
+    development = "create-cyi-database"
+    qa          = "create-cyi-database"
+    integration = "create-cyi-database"
+    preprod     = "create-cyi-database"
+    production  = "create-cyi-database"
   }
 
   # These should be `false` unless we have agreed this data product is to use the capacity reservations so as not to interfere with existing data products running
