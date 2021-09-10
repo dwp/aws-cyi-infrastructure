@@ -101,6 +101,7 @@ resource "aws_s3_bucket_object" "configurations" {
       spark_driver_cores                            = local.spark_driver_cores[local.environment]
       spark_executor_instances                      = local.spark_executor_instances
       spark_default_parallelism                     = local.spark_default_parallelism
+      spark_kyro_buffer                             = local.spark_kyro_buffer
     }
   )
   tags = {
