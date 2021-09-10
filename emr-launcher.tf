@@ -110,7 +110,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_receive_sqs_
     ]
 
     resources = [
-      data.terraform_remote_state.common.outputs.cyi_fileshare_cmk.arn,
+      data.terraform_remote_state.ingestion.outputs.cyi_fileshare_cmk.arn,
     ]
   }
 }
