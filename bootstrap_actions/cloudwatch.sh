@@ -5,8 +5,8 @@ set -Eeuo pipefail
 cwa_metrics_collection_interval="$1"
 cwa_namespace="$2"
 cwa_log_group_name="$3"
-cwa_bootstrap_loggrp_name="$4"
-cwa_steps_loggrp_name="$5"
+cwa_bootstrap_loggrp_name="$5"
+cwa_steps_loggrp_name="$6"
 
 
 export AWS_DEFAULT_REGION="$${4}"
