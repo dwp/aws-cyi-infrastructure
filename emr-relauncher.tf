@@ -41,7 +41,7 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_relauncher" {
 }
 
 resource "aws_cloudwatch_event_target" "aws_cyi_infrastructure_emr_relauncher_target" {
-  rule      = aws_cloudwatch_event_rule.aws_cyi_infrastructure_failed.name
+  rule      = aws_cloudwatch_event_rule.cyi_failed.name
   target_id = "aws_cyi_infrastructure_emr_relauncher_target"
   arn       = aws_lambda_function.aws_cyi_infrastructure_emr_relauncher.arn
 }
@@ -59,7 +59,7 @@ resource "aws_lambda_permission" "aws_cyi_infrastructure_emr_relauncher_invoke_p
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.aws_cyi_infrastructure_emr_relauncher.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.aws_cyi_infrastructure_failed.arn
+  source_arn    = aws_cloudwatch_event_rule.cyi_failed.arn
 }
 
 data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_relauncher_assume_policy" {
