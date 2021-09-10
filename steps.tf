@@ -2,7 +2,7 @@
 resource "aws_s3_bucket_object" "create_databases_sh" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
-  key        = "component/aws-cyi/create-cyi-databases.sh"
+  key        = "component/cyi/create-cyi-databases.sh"
   content = templatefile("${path.module}/steps/create-cyi-databases.sh",
     {
       cyi_db                  = local.cyi_db
@@ -15,7 +15,7 @@ resource "aws_s3_bucket_object" "create_databases_sh" {
 resource "aws_s3_bucket_object" "run_cyi" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
-  key        = "component/aws-cyi/run-cyi.sh"
+  key        = "component/cyi/run-cyi.sh"
   content = templatefile("${path.module}/steps/run-cyi.sh",
     {
       target_db            = local.cyi_db
