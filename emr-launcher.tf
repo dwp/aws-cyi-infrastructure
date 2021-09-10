@@ -176,6 +176,11 @@ resource "aws_iam_policy" "aws_cyi_infrastructure_emr_launcher_pass_role_policy"
   }
 }
 
+resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_receive_sqs_attachment" {
+  role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
+  policy_arn = aws_iam_policy.aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy.arn
+}
+
 resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_read_s3_attachment" {
   role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
   policy_arn = aws_iam_policy.aws_cyi_infrastructure_emr_launcher_read_s3_policy.arn
