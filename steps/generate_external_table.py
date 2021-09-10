@@ -2,7 +2,7 @@ import boto3
 from zipfile import ZipFile
 import gzip
 import os
-from datetime import date
+from datetime import date, timedelta, datetime
 from io import BytesIO
 from pyspark.sql import SparkSession
 from steps.logger import setup_logging
@@ -179,6 +179,77 @@ class PysparkJobRunner:
             the_logger.error(e)
 
 
+    # TODO: Sort this func. Example code from analytical env
+    def set_up_temp_table_with_partition(self, table_prefix, date):
+        # TODO: Create table such that it is unique for date, ie cyi_20210910
+
+        # the_logger.info(
+        #     "collection_json_location : %s",
+        #     collection_json_location,
+        # )
+        # src_managed_hive_table = verified_database_name + "." + 'auditlog_raw'
+        # src_managed_hive_create_query = f"""CREATE TABLE IF NOT EXISTS {src_managed_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS orc TBLPROPERTIES ('orc.compress'='ZLIB')"""
+        # spark.sql(src_managed_hive_create_query)
+        #
+        # date_underscore = date_hyphen.replace("-", "_")
+        # src_external_table = f'auditlog_raw_external_{date_underscore}'
+        # src_external_hive_table = verified_database_name + "." + src_external_table
+        # src_external_hive_create_query = f"""CREATE EXTERNAL TABLE {src_external_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}" """
+        # the_logger.info("hive create query %s", src_external_hive_create_query)
+        # src_external_hive_alter_query = f"""ALTER TABLE {src_external_hive_table} ADD IF NOT EXISTS PARTITION(date_str='{date_hyphen}') LOCATION '{collection_json_location}'"""
+        # src_external_hive_insert_query = f"""INSERT OVERWRITE TABLE {src_managed_hive_table} SELECT * FROM {src_external_hive_table}"""
+        # src_external_hive_drop_query = f"""DROP TABLE IF EXISTS {src_external_hive_table}"""
+        #
+        # spark.sql(src_external_hive_drop_query)
+        # spark.sql(src_external_hive_create_query)
+        # spark.sql(src_external_hive_alter_query)
+        # spark.sql(src_external_hive_insert_query)
+        # spark.sql(src_external_hive_drop_query)
+
+    # TODO: Sort this func. Merge temp table with main table maintaining date
+    def merge_temp_table_with_main(self, temp_tbl, main_tbl):
+        merge_temp_to_main = f"MERGE {main_tbl} AS TARGET USING {temp_tbl} AS SOURCE ON (TARGET.Date = SOURCE.Date)"
+
+        try:
+            self.spark_session.sql(merge_temp_to_main)
+            the_logger.info(
+                f"Merged table '{temp_tbl}' into '{main_tbl}' successfully"
+            )
+        except Exception as e:
+            the_logger.error(
+                f"Failed to merge table '{temp_tbl}' into '{main_tbl}'"
+            )
+
+
+def get_dates_in_range(start_date, export_date) -> List[datetime]:
+    start_date = datetime(start_date)
+    export_date = datetime(export_date)
+
+    days_difference = datetime(export_date) - datetime(start_date)
+    days = days_difference.days
+
+    dates = []
+    for day in days:
+        days - 1
+        dates.append(export_date - timedelta(days = day))
+
+    return dates
+
+
+def get_parameters():
+    """Define and parse command line args."""
+    parser = argparse.ArgumentParser(
+        description="Receive args provided to spark submit job"
+    )
+    # Parse command line inputs and set defaults
+    parser.add_argument("--correlation_id", default="NOT_SET")
+    parser.add_argument("--s3_prefix", default="NOT_SET")
+    parser.add_argument("--s3_bucket", default="NOT_SET")
+    parser.add_argument("--export_date", default=date.today())
+    parser.add_argument("--start_date", default="")
+
+    return args
+
 if __name__ == '__main__':
     the_logger = setup_logging(
         log_level=os.environ["${log_level}"].upper()  # TODO: pass in template arg
@@ -186,22 +257,37 @@ if __name__ == '__main__':
         else "INFO",
         log_path="${log_path}",  # TODO: pass in template arg
     )
+    args = get_parameters()
 
     spark = PysparkJobRunner("${database_name}") # TODO: pass in template arg
     aws = AwsCommunicator()
 
     spark.set_up_table_from_files("${database_name}", "${hive_table_name}", "${file_location}", "${correlation_id}") # TODO: pass in template arg
     aws.delete_existing_s3_files("${published_bucket}", "${published_prefix}") # TODO: pass in template arg
-    s3_keys = aws.get_list_keys_for_prefix("${published_bucket}", "${published_prefix}") # TODO: pass in template arg
-    for s3_key in s3_keys:
-        decompressed_dict = S3Decompressor("${src_bucket}", s3_key).decompressed_dict # TODO: pass in template arg
-        for file_name in decompressed_dict:
-            aws.upload_to_bucket(
-                file_name,
-                decompressed_dict[file_name],
-                "${published_bucket}", # TODO: pass in template arg
-                f"${published_s3_dir}/{date.today()}" # TODO: pass in template arg
-            )
-    # Todo: "Create a temp table for today's date"
 
-#TODO: template in vars in main
+    if args.start_date:
+        date_range = get_dates_in_range(args.start_date, args.export_date)
+    else:
+        date_range = [datetime(args.export_date)]
+
+    for date in date_range:
+        s3_keys = aws.get_list_keys_for_prefix("${src_bucket}", f"${prefix}/{datetime.strftime(date)}") # TODO: pass in template arg
+
+        for s3_key in s3_keys:
+            decompressed_dict = S3Decompressor("${src_bucket}", s3_key).decompressed_dict # TODO: pass in template arg
+
+            for file_name in decompressed_dict:
+                aws.upload_to_bucket(
+                    file_name,
+                    decompressed_dict[file_name],
+                    "${published_bucket}", # TODO: pass in template arg
+                    f"${published_s3_dir}/${database_name}/{datetime.strftime(date)}" # TODO: pass in template arg --- THIS HAS TO BE EXPORT DATE / SAME DATE AS SRC
+                )
+
+                PysparkJobRunner.set_up_temp_table_with_partition(table_prefix, args.export_date)
+
+                PysparkJobRunner.merge_temp_table_with_main(temp_tbl, main_tbl) # TODO: pass in template arg for main table
+
+
+#   TODO: Make export of particular date in S3 fetch - Allow an export range. `start_date`
+#   TODO: template in vars in main
