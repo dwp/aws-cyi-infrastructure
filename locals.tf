@@ -179,7 +179,6 @@ locals {
     production  = "0"
   }
 
-
   hive_tez_container_size = {
     development = "2688"
     qa          = "2688"
@@ -204,22 +203,6 @@ locals {
     integration = "896"
     preprod     = "5068"
     production  = "5068"
-  }
-
-  hive_bytes_per_reducer = {
-    development = "13421728"
-    qa          = "13421728"
-    integration = "13421728"
-    preprod     = "13421728"
-    production  = "13421728"
-  }
-
-  tez_runtime_unordered_output_buffer_size_mb = {
-    development = "268"
-    qa          = "268"
-    integration = "268"
-    preprod     = "2148"
-    production  = "2148"
   }
 
   # 0.4 of hive_tez_container_size
@@ -255,15 +238,6 @@ locals {
     production  = "12288"
   }
 
-  # 0.8 of hive_tez_container_size
-  tez_task_resource_memory_mb = {
-    development = "1024"
-    qa          = "1024"
-    integration = "1024"
-    preprod     = "8196"
-    production  = "8196"
-  }
-
   # 0.8 of tez_am_resource_memory_mb
   tez_am_launch_cmd_opts = {
     development = "-Xmx819m"
@@ -273,52 +247,11 @@ locals {
     production  = "-Xmx6556m"
   }
 
-  // This value should be the same as yarn.scheduler.maximum-allocation-mb
-  llap_daemon_yarn_container_mb = {
-    development = "57344"
-    qa          = "57344"
-    integration = "57344"
-    preprod     = "385024"
-    production  = "385024"
-  }
-
-  llap_number_of_instances = {
-    development = "5"
-    qa          = "5"
-    integration = "5"
-    preprod     = "20"
-    production  = "29"
-  }
-
-  map_reduce_vcores_per_node = {
-    development = "5"
-    qa          = "5"
-    integration = "5"
-    preprod     = "15"
-    production  = "15"
-  }
-
-  map_reduce_vcores_per_task = {
-    development = "1"
-    qa          = "1"
-    integration = "1"
-    preprod     = "5"
-    production  = "5"
-  }
-
-  hive_max_reducers = {
-    development = "1099"
-    qa          = "1099"
-    integration = "1099"
-    preprod     = "3000"
-    production  = "3000"
-  }
-
   hive_tez_sessions_per_queue = {
-    development = "10"
-    qa          = "10"
-    integration = "10"
-    preprod     = "35"
-    production  = "35"
+    development = "5"
+    qa          = "5"
+    integration = "5"
+    preprod     = "10"
+    production  = "10"
   }
 }
