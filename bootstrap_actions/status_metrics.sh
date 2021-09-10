@@ -36,7 +36,6 @@
 
   CORRELATION_ID=$(cat $CORRELATION_ID_FILE)
   EXPORT_DATE=$(cat $EXPORT_DATE_FILE)
-  SNAPSHOT_TYPE="NOT_SET"
 
   if [[ -z "$EXPORT_DATE" ]]; then
     log_wrapper_message "Export date from file was empty, so defaulting to today's date"
