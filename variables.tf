@@ -53,3 +53,23 @@ variable "region" {
   description = "AWS Region name"
   default     = "eu-west-2"
 }
+
+variable "spark_kyro_buffer" {
+  default = {
+    development = "128m"
+    qa          = "128m"
+    integration = "128m"
+    preprod     = "2047m"
+    production  = "2047m" # Max amount allowed
+  }
+}
+
+variable "spark_executor_instances" {
+  default = {
+    development = 50
+    qa          = 50
+    integration = 50
+    preprod     = 600
+    production  = 600 # More than possible as it won't create them if no core or memory available
+  }
+}

@@ -16,7 +16,7 @@ locals {
   }
 
   overridden_tags = {
-    Role         = "emr_template_repository"
+    Role         = "cyi"
     Owner        = "aws-cyi-infrastructure"
     Persistence  = local.persistence_tag_value[local.environment]
     AutoShutdown = local.auto_shutdown_tag_value[local.environment]
