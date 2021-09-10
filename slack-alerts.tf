@@ -1,4 +1,4 @@
-resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_failed" {
+resource "aws_cloudwatch_event_rule" "cyi_failed" {
   name          = "${local.emr_cluster_name}_failed"
   description   = "Sends failed message to slack when aws_cyi_infrastructure cluster terminates with errors"
   event_pattern = <<EOF
@@ -25,7 +25,7 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_terminated" {
+resource "aws_cloudwatch_event_rule" "cyi_terminated" {
   name          = "${local.emr_cluster_name}_terminated"
   description   = "Sends failed message to slack when aws_cyi_infrastructure cluster terminates by user request"
   event_pattern = <<EOF
@@ -55,7 +55,7 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_success" {
+resource "aws_cloudwatch_event_rule" "cyi_success" {
   name          = "${local.emr_cluster_name}_success"
   description   = "checks that all steps complete"
   event_pattern = <<EOF
@@ -85,7 +85,7 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_success_with_errors" {
+resource "aws_cloudwatch_event_rule" "cyi_success_with_errors" {
   name          = "${local.emr_cluster_name}_succes_with_errors"
   description   = "checks that all mandatory steps complete but with failures on non mandatory steps"
   event_pattern = <<EOF
@@ -115,7 +115,7 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_running" {
+resource "aws_cloudwatch_event_rule" "cyi_running" {
   name          = "${local.emr_cluster_name}_running"
   description   = "checks that aws_cyi_infrastructure is running"
   event_pattern = <<EOF
@@ -142,8 +142,8 @@ EOF
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_failed" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "cyi_failed" {
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_failed"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -156,7 +156,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_failed" {
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_failed.name
+    RuleName = aws_cloudwatch_event_rule.cyi_failed.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_failed",
@@ -165,8 +165,8 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_failed" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_terminated" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "cyi_terminated" {
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_terminated"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -179,7 +179,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_terminated" {
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_terminated.name
+    RuleName = aws_cloudwatch_event_rule.cyi_terminated.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_terminated",
@@ -188,8 +188,8 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_terminated" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "cyi_success" {
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_success"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -202,7 +202,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success" {
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_success.name
+    RuleName = aws_cloudwatch_event_rule.cyi_success.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_success",
@@ -211,8 +211,8 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success_with_errors" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "cyi_success_with_errors" {
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_success_with_errors"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -225,7 +225,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success_with_erro
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_success_with_errors.name
+    RuleName = aws_cloudwatch_event_rule.cyi_success_with_errors.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_success_with_errors",
@@ -234,8 +234,8 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success_with_erro
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_running" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+resource "aws_cloudwatch_metric_alarm" "cyi_running" {
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_running"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -248,7 +248,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_running" {
   insufficient_data_actions = []
   alarm_actions             = [data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring.arn]
   dimensions = {
-    RuleName = aws_cloudwatch_event_rule.aws_cyi_infrastructure_running.name
+    RuleName = aws_cloudwatch_event_rule.cyi_running.name
   }
   tags = {
     Name              = "${local.emr_cluster_name}_running",
