@@ -86,7 +86,7 @@ EOF
 }
 
 resource "aws_cloudwatch_event_rule" "aws_cyi_infrastructure_success_with_errors" {
-  name          = "${local.emr_cluster_name}_succes_with_errors"
+  name          = "${local.emr_cluster_name}_success_with_errors"
   description   = "checks that all mandatory steps complete but with failures on non mandatory steps"
   event_pattern = <<EOF
 {
@@ -143,7 +143,7 @@ EOF
 }
 
 resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_failed" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_failed"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -166,7 +166,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_failed" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_terminated" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_terminated"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -189,7 +189,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_terminated" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_success"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -212,7 +212,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success_with_errors" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_success_with_errors"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"
@@ -235,7 +235,7 @@ resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_success_with_erro
 }
 
 resource "aws_cloudwatch_metric_alarm" "aws_cyi_infrastructure_running" {
-  count                     = local.aws_cyi_infrastructure_alerts[local.environment] == true ? 1 : 0
+  count                     = local.cyi_alerts[local.environment] == true ? 1 : 0
   alarm_name                = "${local.emr_cluster_name}_running"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = "1"

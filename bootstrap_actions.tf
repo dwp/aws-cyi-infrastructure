@@ -1,6 +1,6 @@
 resource "aws_s3_bucket_object" "metadata_script" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
-  key        = "component/aws_cyi_infrastructure/metadata.sh"
+  key        = "component/cyi/metadata.sh"
   content    = file("${path.module}/bootstrap_actions/metadata.sh")
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
   tags = {
@@ -10,7 +10,7 @@ resource "aws_s3_bucket_object" "metadata_script" {
 
 resource "aws_s3_bucket_object" "download_scripts_sh" {
   bucket = data.terraform_remote_state.common.outputs.config_bucket.id
-  key    = "component/aws_cyi_infrastructure/download_scripts.sh"
+  key    = "component/cyi/download_scripts.sh"
   content = templatefile("${path.module}/bootstrap_actions/download_scripts.sh",
     {
       VERSION                          = local.aws_cyi_infrastructure_version[local.environment]
@@ -18,7 +18,7 @@ resource "aws_s3_bucket_object" "download_scripts_sh" {
       ENVIRONMENT_NAME                 = local.environment
       S3_COMMON_LOGGING_SHELL          = format("s3://%s/%s", data.terraform_remote_state.common.outputs.config_bucket.id, data.terraform_remote_state.common.outputs.application_logging_common_file.s3_id)
       S3_LOGGING_SHELL                 = format("s3://%s/%s", data.terraform_remote_state.common.outputs.config_bucket.id, aws_s3_bucket_object.logging_script.key)
-      scripts_location                 = format("s3://%s/%s", data.terraform_remote_state.common.outputs.config_bucket.id, "component/aws_cyi_infrastructure")
+      scripts_location                 = format("s3://%s/%s", data.terraform_remote_state.common.outputs.config_bucket.id, "component/cyi")
   })
   tags = {
     Name = "download_scripts_sh"
@@ -27,7 +27,7 @@ resource "aws_s3_bucket_object" "download_scripts_sh" {
 
 resource "aws_s3_bucket_object" "emr_setup_sh" {
   bucket = data.terraform_remote_state.common.outputs.config_bucket.id
-  key    = "component/aws_cyi_infrastructure/emr-setup.sh"
+  key    = "component/cyi/emr-setup.sh"
   content = templatefile("${path.module}/bootstrap_actions/emr-setup.sh",
     {
       aws_cyi_infrastructure_LOG_LEVEL = local.aws_cyi_infrastructure_log_level[local.environment]
@@ -54,7 +54,7 @@ resource "aws_s3_bucket_object" "emr_setup_sh" {
 
 resource "aws_s3_bucket_object" "ssm_script" {
   bucket  = data.terraform_remote_state.common.outputs.config_bucket.id
-  key     = "component/aws_cyi_infrastructure/start_ssm.sh"
+  key     = "component/cyi/start_ssm.sh"
   content = file("${path.module}/bootstrap_actions/start_ssm.sh")
   tags = {
     Name = "ssm_script"
@@ -63,7 +63,7 @@ resource "aws_s3_bucket_object" "ssm_script" {
 
 resource "aws_s3_bucket_object" "status_metrics_sh" {
   bucket = data.terraform_remote_state.common.outputs.config_bucket.id
-  key    = "component/aws_cyi_infrastructure/status_metrics.sh"
+  key    = "component/cyi/status_metrics.sh"
   content = templatefile("${path.module}/bootstrap_actions/status_metrics.sh",
     {
       aws_cyi_infrastructure_pushgateway_hostname = local.aws_cyi_infrastructure_pushgateway_hostname
@@ -74,7 +74,7 @@ resource "aws_s3_bucket_object" "status_metrics_sh" {
 
 resource "aws_s3_bucket_object" "logging_script" {
   bucket  = data.terraform_remote_state.common.outputs.config_bucket.id
-  key     = "component/aws_cyi_infrastructure/logging.sh"
+  key     = "component/cyi/logging.sh"
   content = file("${path.module}/bootstrap_actions/logging.sh")
   tags = {
     Name = "logging_script"
@@ -107,7 +107,7 @@ resource "aws_cloudwatch_log_group" "aws_cyi_infrastructure_cw_steps_loggroup" {
 
 resource "aws_s3_bucket_object" "cloudwatch_sh" {
   bucket = data.terraform_remote_state.common.outputs.config_bucket.id
-  key    = "component/aws_cyi_infrastructure/cloudwatch.sh"
+  key    = "component/cyi/cloudwatch.sh"
   content = templatefile("${path.module}/bootstrap_actions/cloudwatch.sh",
     {
       emr_release = var.emr_release[local.environment]
@@ -121,7 +121,7 @@ resource "aws_s3_bucket_object" "cloudwatch_sh" {
 resource "aws_s3_bucket_object" "metrics_setup_sh" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
-  key        = "component/aws_cyi_infrastructure/metrics-setup.sh"
+  key        = "component/cyi/metrics-setup.sh"
   content = templatefile("${path.module}/bootstrap_actions/metrics-setup.sh",
     {
       proxy_url         = data.terraform_remote_state.internal_compute.outputs.internet_proxy.url
@@ -137,7 +137,7 @@ resource "aws_s3_bucket_object" "metrics_setup_sh" {
 resource "aws_s3_bucket_object" "metrics_pom" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
-  key        = "component/aws_cyi_infrastructure/metrics/pom.xml"
+  key        = "component/cyi/metrics/pom.xml"
   content    = file("${path.module}/bootstrap_actions/metrics_config/pom.xml")
   tags = {
     Name = "metrics_pom"
@@ -147,7 +147,7 @@ resource "aws_s3_bucket_object" "metrics_pom" {
 resource "aws_s3_bucket_object" "prometheus_config" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
-  key        = "component/aws_cyi_infrastructure/metrics/prometheus_config.yml"
+  key        = "component/cyi/metrics/prometheus_config.yml"
   content    = file("${path.module}/bootstrap_actions/metrics_config/prometheus_config.yml")
   tags = {
     Name = "prometheus_config"
@@ -157,7 +157,7 @@ resource "aws_s3_bucket_object" "prometheus_config" {
 resource "aws_s3_bucket_object" "dynamo_json_file" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
-  key        = "component/aws_cyi_infrastructure/dynamo_schema.json"
+  key        = "component/cyi/dynamo_schema.json"
   content    = file("${path.module}/bootstrap_actions/dynamo_schema.json")
   tags = {
     Name = "dynamo_schema"
@@ -167,7 +167,7 @@ resource "aws_s3_bucket_object" "dynamo_json_file" {
 resource "aws_s3_bucket_object" "update_dynamo_sh" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
-  key        = "component/aws_cyi_infrastructure/update_dynamo.sh"
+  key        = "component/cyi/update_dynamo.sh"
   content = templatefile("${path.module}/bootstrap_actions/update_dynamo.sh",
     {
       dynamodb_table_name = local.data_pipeline_metadata

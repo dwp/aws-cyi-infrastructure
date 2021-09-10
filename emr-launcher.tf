@@ -21,7 +21,7 @@ resource "aws_lambda_function" "aws_cyi_infrastructure_emr_launcher" {
     )
   )
   publish = false
-  timeout = 60
+  timeout = 900
 
   environment {
     variables = {
@@ -67,7 +67,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_read_s3_poli
       "s3:GetObject",
     ]
     resources = [
-      format("arn:aws:s3:::%s/emr/aws_cyi_infrastructure/*", data.terraform_remote_state.common.outputs.config_bucket.id)
+      format("arn:aws:s3:::%s/emr/cyi/*", data.terraform_remote_state.common.outputs.config_bucket.id)
     ]
   }
   statement {
@@ -83,11 +83,35 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_read_s3_poli
 
 data "aws_iam_policy_document" "aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy" {
   statement {
+    sid    = "AllowLambdaAccessToReceiveFromSQS"
     effect = "Allow"
+
     actions = [
       "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
     ]
-    resources = ["*"]
+
+    resources = [
+      data.terraform_remote_state.ingestion.outputs.cyi_fileshare_sqs.arn,
+    ]
+  }
+
+  statement {
+    sid    = "AllowKMSUseOfSQSCMK"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey",
+      "kms:Encrypt",
+      "kms:GenerateDataKey*",
+      "kms:ReEncrypt*",
+    ]
+
+    resources = [
+      data.terraform_remote_state.ingestion.outputs.cyi_fileshare_cmk.arn,
+    ]
   }
 }
 
@@ -152,6 +176,11 @@ resource "aws_iam_policy" "aws_cyi_infrastructure_emr_launcher_pass_role_policy"
   }
 }
 
+resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_receive_sqs_attachment" {
+  role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
+  policy_arn = aws_iam_policy.aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy.arn
+}
+
 resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_read_s3_attachment" {
   role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
   policy_arn = aws_iam_policy.aws_cyi_infrastructure_emr_launcher_read_s3_policy.arn
@@ -172,18 +201,22 @@ resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_p
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
-resource "aws_sns_topic_subscription" "aws_cyi_infrastructure_trigger_sns" {
-  topic_arn = aws_sns_topic.aws_cyi_infrastructure_cw_trigger_sns.arn
-  protocol  = "lambda"
-  endpoint  = aws_lambda_function.aws_cyi_infrastructure_emr_launcher.arn
+resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_sqs" {
+  role       = aws_iam_role.aws_cyi_infrastructure_emr_launcher_lambda_role.name
+  policy_arn = aws_iam_policy.aws_cyi_infrastructure_emr_launcher_receive_sqs_message_policy.arn
 }
 
-resource "aws_lambda_permission" "aws_cyi_infrastructure_emr_launcher_subscription" {
-  statement_id  = "CWTriggeraws_cyi_infrastructureSNS"
+resource "aws_lambda_event_source_mapping" "cyi_sqs_event_source_mapping" {
+  event_source_arn = data.terraform_remote_state.ingestion.outputs.cyi_fileshare_sqs.arn
+  function_name    = aws_lambda_function.aws_cyi_infrastructure_emr_launcher.arn
+}
+
+resource "aws_lambda_permission" "cyi_sqs_event_source_mapping" {
+  statement_id  = "CYIAllowExecutionFromSQS"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.aws_cyi_infrastructure_emr_launcher.function_name
-  principal     = "sns.amazonaws.com"
-  source_arn    = aws_sns_topic.aws_cyi_infrastructure_cw_trigger_sns.arn
+  principal     = "sqs.amazonaws.com"
+  source_arn    = data.terraform_remote_state.ingestion.outputs.cyi_fileshare_sqs.arn
 }
 
 resource "aws_iam_policy" "aws_cyi_infrastructure_emr_launcher_getsecrets" {
