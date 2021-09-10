@@ -94,6 +94,13 @@ resource "aws_s3_bucket_object" "configurations" {
       s3_processed_bucket                           = data.terraform_remote_state.common.outputs.processed_bucket.id
       hive_tez_sessions_per_queue                   = local.hive_tez_sessions_per_queue[local.environment]
       s3_htme_bucket                                = data.terraform_remote_state.internal_compute.outputs.htme_s3_bucket.id
+      spark_executor_cores                          = local.spark_executor_cores[local.environment]
+      spark_executor_memory                         = local.spark_executor_memory[local.environment]
+      spark_yarn_executor_memory_overhead           = local.spark_yarn_executor_memory_overhead[local.environment]
+      spark_driver_memory                           = local.spark_driver_memory[local.environment]
+      spark_driver_cores                            = local.spark_driver_cores[local.environment]
+      spark_executor_instances                      = local.spark_executor_instances
+      spark_default_parallelism                     = local.spark_default_parallelism
     }
   )
   tags = {
