@@ -6,7 +6,7 @@ set -Eeuo pipefail
     source /opt/emr/logging.sh
 
     function log_wrapper_message() {
-        log_aws_cyi_message "$${1}" "create-cyi-database.sh" "Running as: ,$USER"
+        log_cyi_message "$${1}" "create-cyi-database.sh" "Running as: ,$USER"
     }
 
     CORRELATION_ID="$2"
