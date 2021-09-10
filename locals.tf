@@ -74,7 +74,7 @@ locals {
     production  = "0.0.1"
   }
 
-  aws_cyi_infrastructure_alerts = {
+  cyi_alerts = {
     development = false
     qa          = false
     integration = false
