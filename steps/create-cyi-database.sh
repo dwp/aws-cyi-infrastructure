@@ -14,7 +14,7 @@ set -Eeuo pipefail
     S3_PREFIX="$6"
     EXPORT_DATE="$8"
 
-    log_wrapper_message "Correlation id is '${CORRELATION_ID}', s3 bucket is '${S3_BUCKET}', s3 prefix is '${S3_PREFIX}' and export date is '${EXPORT_DATE}', "
+    log_wrapper_message "Correlation id is '$CORRELATION_ID', s3 bucket is '$S3_BUCKET', s3 prefix is '$S3_PREFIX' and export date is '$EXPORT_DATE', "
 
     echo "$CORRELATION_ID" >>     /opt/emr/correlation_id.txt
     echo "$S3_BUCKET" >>          /opt/emr/s3_bucket.txt
