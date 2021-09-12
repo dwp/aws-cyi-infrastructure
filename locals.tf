@@ -1,4 +1,12 @@
 locals {
+  cyi_active = {
+    development = true
+    qa          = true
+    integration = true
+    preprod     = true
+    production  = false
+  }
+
   persistence_tag_value = {
     development = "Ignore"
     qa          = "Ignore"
