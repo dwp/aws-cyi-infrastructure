@@ -180,31 +180,32 @@ class PysparkJobRunner:
 
 
     # TODO: Sort this func. Example code from analytical env
-    def set_up_temp_table_with_partition(self, table_prefix, date):
+    def set_up_temp_table_with_partition(self, spark, table_prefix, date, verified_database_name):
         # TODO: Create table such that it is unique for date, ie cyi_20210910
 
-        # the_logger.info(
-        #     "collection_json_location : %s",
-        #     collection_json_location,
-        # )
-        # src_managed_hive_table = verified_database_name + "." + 'auditlog_raw'
-        # src_managed_hive_create_query = f"""CREATE TABLE IF NOT EXISTS {src_managed_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS orc TBLPROPERTIES ('orc.compress'='ZLIB')"""
-        # spark.sql(src_managed_hive_create_query)
-        #
-        # date_underscore = date_hyphen.replace("-", "_")
-        # src_external_table = f'auditlog_raw_external_{date_underscore}'
-        # src_external_hive_table = verified_database_name + "." + src_external_table
-        # src_external_hive_create_query = f"""CREATE EXTERNAL TABLE {src_external_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}" """
-        # the_logger.info("hive create query %s", src_external_hive_create_query)
-        # src_external_hive_alter_query = f"""ALTER TABLE {src_external_hive_table} ADD IF NOT EXISTS PARTITION(date_str='{date_hyphen}') LOCATION '{collection_json_location}'"""
-        # src_external_hive_insert_query = f"""INSERT OVERWRITE TABLE {src_managed_hive_table} SELECT * FROM {src_external_hive_table}"""
-        # src_external_hive_drop_query = f"""DROP TABLE IF EXISTS {src_external_hive_table}"""
-        #
-        # spark.sql(src_external_hive_drop_query)
-        # spark.sql(src_external_hive_create_query)
-        # spark.sql(src_external_hive_alter_query)
-        # spark.sql(src_external_hive_insert_query)
-        # spark.sql(src_external_hive_drop_query)
+        date_underscore = date.strftime("%m_%d_%Y")
+        table_name = table_prefix + date_underscore
+
+        the_logger.info(f"Attempting to create temporary table '{table_name}'")
+
+        src_managed_hive_create_query = f"""CREATE TABLE IF NOT EXISTS {src_managed_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS orc TBLPROPERTIES ('orc.compress'='ZLIB')"""
+        spark.sql(src_managed_hive_create_query)
+
+        src_external_table = f'{args.database_name}_{date_underscore}'
+        src_external_hive_table = verified_database_name + "." + src_external_table
+        src_external_hive_create_query = f"""CREATE EXTERNAL TABLE {src_external_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}" """
+
+        the_logger.info("hive create query %s", src_external_hive_create_query)
+        src_external_hive_alter_query = f"""ALTER TABLE {src_external_hive_table} ADD IF NOT EXISTS PARTITION(date_str='{date_hyphen}') LOCATION '{collection_json_location}'"""
+        src_external_hive_insert_query = f"""INSERT OVERWRITE TABLE {src_managed_hive_table} SELECT * FROM {src_external_hive_table}"""
+        src_external_hive_drop_query = f"""DROP TABLE IF EXISTS {src_external_hive_table}"""
+
+        spark.sql(src_external_hive_create_query)
+        spark.sql(src_external_hive_alter_query)
+        spark.sql(src_external_hive_insert_query)
+        spark.sql(src_external_hive_drop_query)
+
+        return table_name
 
     # TODO: Sort this func. Merge temp table with main table maintaining date
     def merge_temp_table_with_main(self, temp_tbl, main_tbl):
@@ -236,6 +237,31 @@ def get_dates_in_range(start_date, export_date) -> List[datetime]:
     return dates
 
 
+def create_metastore_db(
+        spark,
+        published_database_name,
+        args,
+):
+    verified_database_name = published_database_name
+    # Check to create database only if the backend is Aurora as Glue database is created through terraform
+    if args.hive_metastore_backend == "aurora":
+        try:
+            the_logger.info(
+                "Creating metastore db with name of %s while processing correlation_id %s",
+                verified_database_name,
+                args.correlation_id,
+            )
+
+            create_db_query = f"CREATE DATABASE IF NOT EXISTS {verified_database_name}"
+            spark.sql(create_db_query)
+        except BaseException as ex:
+            the_logger.error(
+                "Error occurred creating hive metastore backend %s",
+                repr(ex),
+            )
+            raise BaseException(ex)
+
+
 def get_parameters():
     """Define and parse command line args."""
     parser = argparse.ArgumentParser(
@@ -247,46 +273,67 @@ def get_parameters():
     parser.add_argument("--s3_bucket", default="NOT_SET")
     parser.add_argument("--export_date", default=date.today())
     parser.add_argument("--start_date", default="")
+    parser.add_argument("--correlation_id", default="NOT_SET")
+
+    # Terraform template values
+    parser.add_argument("--database_name", default="${database_name}")
+    parser.add_argument("--log_level", default="${log_level}")
+    args.log_level = os.environ['LOG_LEVEL'].upper() if 'LOG_LEVEL' in os.environ else "${log_level}"
+    parser.add_argument("--log_path", default="${log_path}")
+
+    args.hive_metastore_backend = "${hive_metastore_backend}"
+    args.hive_table_name = "${hive_table_name}"
+    args.file_location = "${file_location}"
+    args.published_bucket = "${published_bucket}"
+    args.published_prefix = "${published_prefix}"
+    args.published_s3_dir = "${published_s3_dir}"
+    args.src_bucket = "${src_bucket}"
 
     return args
 
+
 if __name__ == '__main__':
-    the_logger = setup_logging(
-        log_level=os.environ["${log_level}"].upper()  # TODO: pass in template arg
-        if "${log_level}" in os.environ
-        else "INFO",
-        log_path="${log_path}",  # TODO: pass in template arg
-    )
     args = get_parameters()
 
-    spark = PysparkJobRunner("${database_name}") # TODO: pass in template arg
+    the_logger = setup_logging(
+        log_level=args.log_level.upper(),
+        log_path=args.log_path
+    )
+
+    spark = PysparkJobRunner(args.database_name)
     aws = AwsCommunicator()
 
-    spark.set_up_table_from_files("${database_name}", "${hive_table_name}", "${file_location}", "${correlation_id}") # TODO: pass in template arg
-    aws.delete_existing_s3_files("${published_bucket}", "${published_prefix}") # TODO: pass in template arg
+    spark.set_up_table_from_files(args.database_name, args.hive_table_name, args.file_location, args.correlation_id)
+    aws.delete_existing_s3_files(args.published_bucket, args.published_prefix)
 
     if args.start_date:
         date_range = get_dates_in_range(args.start_date, args.export_date)
     else:
         date_range = [datetime(args.export_date)]
 
+    verified_database_name = create_metastore_db(
+        spark,
+        args.database_name,
+        args,
+    )
+
     for date in date_range:
-        s3_keys = aws.get_list_keys_for_prefix("${src_bucket}", f"${prefix}/{datetime.strftime(date)}") # TODO: pass in template arg
+        s3_keys = aws.get_list_keys_for_prefix(args.src_bucket, f"{args.published_prefix}/{datetime.strftime(date)}")
 
         for s3_key in s3_keys:
-            decompressed_dict = S3Decompressor("${src_bucket}", s3_key).decompressed_dict # TODO: pass in template arg
+            decompressed_dict = S3Decompressor(args.src_bucket, s3_key).decompressed_dict
 
             for file_name in decompressed_dict:
                 aws.upload_to_bucket(
                     file_name,
                     decompressed_dict[file_name],
-                    "${published_bucket}", # TODO: pass in template arg
-                    f"${published_s3_dir}/${database_name}/{datetime.strftime(date)}" # TODO: pass in template arg --- THIS HAS TO BE EXPORT DATE / SAME DATE AS SRC
+                    args.published_bucket,
+                    f"{args.published_s3_dir}/{args.database_name}/{datetime.strftime(date)}" # TODO: THIS HAS TO BE EXPORT DATE / SAME DATE AS SRC
                 )
 
-                PysparkJobRunner.set_up_temp_table_with_partition(table_prefix, args.export_date)
+                temp_tbl = PysparkJobRunner.set_up_temp_table_with_partition(spark, table_prefix, args.export_date, verified_database_name)
 
-                PysparkJobRunner.merge_temp_table_with_main(temp_tbl, main_tbl) # TODO: pass in template arg for main table
+                PysparkJobRunner.merge_temp_table_with_main(temp_tbl, args.database_name)
 
 
 #   TODO: Make export of particular date in S3 fetch - Allow an export range. `start_date`
