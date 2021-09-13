@@ -188,8 +188,8 @@ class PysparkJobRunner:
 
         the_logger.info(f"Attempting to create temporary table '{table_name}'")
 
-        src_managed_hive_create_query = f"""CREATE TABLE IF NOT EXISTS {src_managed_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS orc TBLPROPERTIES ('orc.compress'='ZLIB')"""
-        spark.sql(src_managed_hive_create_query)
+        src_managed_hive_create_query = f"""CREATE TABLE IF NOT EXISTS {table_name}(val STRING) PARTITIONED BY (date_str STRING) STORED AS orc TBLPROPERTIES ('orc.compress'='ZLIB')"""
+        self.spark_session.sql(src_managed_hive_create_query)
 
         src_external_table = f'{args.database_name}_{date_underscore}'
         src_external_hive_table = verified_database_name + "." + src_external_table
@@ -200,14 +200,13 @@ class PysparkJobRunner:
         src_external_hive_insert_query = f"""INSERT OVERWRITE TABLE {src_managed_hive_table} SELECT * FROM {src_external_hive_table}"""
         src_external_hive_drop_query = f"""DROP TABLE IF EXISTS {src_external_hive_table}"""
 
-        spark.sql(src_external_hive_create_query)
-        spark.sql(src_external_hive_alter_query)
-        spark.sql(src_external_hive_insert_query)
-        spark.sql(src_external_hive_drop_query)
+        self.spark_session(src_external_hive_create_query)
+        self.spark_session(src_external_hive_alter_query)
+        self.spark_session(src_external_hive_insert_query)
+        self.spark_session(src_external_hive_drop_query)
 
         return table_name
 
-    # TODO: Sort this func. Merge temp table with main table maintaining date
     def merge_temp_table_with_main(self, temp_tbl, main_tbl):
         merge_temp_to_main = f"MERGE {main_tbl} AS TARGET USING {temp_tbl} AS SOURCE ON (TARGET.Date = SOURCE.Date)"
 
@@ -220,6 +219,11 @@ class PysparkJobRunner:
             the_logger.error(
                 f"Failed to merge table '{temp_tbl}' into '{main_tbl}'"
             )
+
+    def cleanup_table(self, table_name):
+        query = f"""DROP TABLE {table_name}"""
+
+        self.spark_session.sql(query)
 
 
 def get_dates_in_range(start_date, export_date) -> List[datetime]:
@@ -261,6 +265,7 @@ def create_metastore_db(
             )
             raise BaseException(ex)
 
+    return verified_database_name
 
 def get_parameters():
     """Define and parse command line args."""
@@ -318,7 +323,8 @@ if __name__ == '__main__':
     )
 
     for date in date_range:
-        s3_keys = aws.get_list_keys_for_prefix(args.src_bucket, f"{args.published_prefix}/{datetime.strftime(date)}")
+        date_str = datetime.strftime(date)
+        s3_keys = aws.get_list_keys_for_prefix(args.src_bucket, f"{args.published_prefix}/{date_str}")
 
         for s3_key in s3_keys:
             decompressed_dict = S3Decompressor(args.src_bucket, s3_key).decompressed_dict
@@ -328,13 +334,17 @@ if __name__ == '__main__':
                     file_name,
                     decompressed_dict[file_name],
                     args.published_bucket,
-                    f"{args.published_s3_dir}/{args.database_name}/{datetime.strftime(date)}" # TODO: THIS HAS TO BE EXPORT DATE / SAME DATE AS SRC
+                    f"{args.published_s3_dir}/{args.database_name}/{date_str}"
                 )
 
-                temp_tbl = PysparkJobRunner.set_up_temp_table_with_partition(spark, table_prefix, args.export_date, verified_database_name)
+                temp_tbl = PysparkJobRunner.set_up_temp_table_with_partition(spark,
+                                                                             table_prefix,
+                                                                             args.export_date,
+                                                                             verified_database_name)
 
                 PysparkJobRunner.merge_temp_table_with_main(temp_tbl, args.database_name)
 
+                PysparkJobRunner.clean_up_table(temp_tbl)
 
+    the_logger.info(f"Completed import for export date '{args.export_date}'")
 #   TODO: Make export of particular date in S3 fetch - Allow an export range. `start_date`
-#   TODO: template in vars in main
