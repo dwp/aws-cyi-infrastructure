@@ -202,10 +202,8 @@ class PysparkJobRunner:
 
         try:
             insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{temp_tbl} SELECT * FROM {main_database}.{main_database_tbl}"""
-            drop_query = f"""DROP TABLE IF EXISTS {main_database}.{temp_tbl}"""
 
             self.spark_session.sql(insert_query)
-            self.spark_session.sql(drop_query)
 
             the_logger.info(
                 f"Merged table '{temp_tbl}' into '{main_database_tbl}' successfully"
@@ -215,10 +213,12 @@ class PysparkJobRunner:
                 f"Failed to merge table '{temp_tbl}' into '{main_database_tbl}'"
             )
 
-    def cleanup_table(self, table_name):
-        query = f"""DROP TABLE {table_name}"""
-
-        self.spark_session.sql(query)
+    def cleanup_table(self, main_database, table_name):
+        drop_query = f"""DROP TABLE IF EXISTS {main_database}.{temp_tbl}"""
+        the_logger.info(
+            f"Dropped table '{table_name}' successfully"
+        )
+        self.spark_session.sql(drop_query)
 
 
 def get_dates_in_range(start_date, export_date) -> List[datetime]:
@@ -343,7 +343,6 @@ if __name__ == '__main__':
 
                 PysparkJobRunner.merge_temp_table_with_main(temp_tbl, args.database_name, args.external_table_name)
 
-                PysparkJobRunner.clean_up_table(temp_tbl)
+                PysparkJobRunner.clean_up_table(args.database_name, temp_tbl)
 
     the_logger.info(f"Completed import for export date '{args.export_date}'")
-#   TODO: Make export of particular date in S3 fetch - Allow an export range. `start_date`
