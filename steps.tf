@@ -42,6 +42,7 @@ resource "aws_s3_bucket_object" "generate_external_table" {
       src_bucket          = format("s3://%s", data.terraform_remote_state.ingestion.outputs.s3_buckets.input_bucket)
       src_s3_prefix       = "cyi/"
       log_level           = "INFO"
+      log_path            = "/var/log/cyi/generate_external_table.log"
     }
   )
 }

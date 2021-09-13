@@ -1,12 +1,26 @@
 import boto3
 import gzip
 import os
+import logging
+import sys
+import datetime as dt
 
 from zipfile import ZipFile
 from datetime import date, timedelta, datetime
 from io import BytesIO
 from pyspark.sql import SparkSession
-from steps.logger import setup_logging
+
+
+class CustomLogFormatter(logging.Formatter):
+    converter=dt.datetime.fromtimestamp
+    def formatTime(self, record, datefmt=None):
+        ct = self.converter(record.created)
+        if datefmt:
+            s = ct.strftime(datefmt)
+        else:
+            t = ct.strftime("%Y-%m-%d %H:%M:%S")
+            s = "%s.%03d" % (t, record.msecs)
+        return s
 
 
 class S3Decompressor:
@@ -256,11 +270,31 @@ def get_parameters():
     return args
 
 
+def setup_logging(log_level, log_path):
+    the_logger = logging.getLogger()
+    for old_handler in the_logger.handlers:
+        the_logger.removeHandler(old_handler)
+
+    if log_path is None:
+        handler = logging.StreamHandler(sys.stdout)
+    else:
+        handler = logging.FileHandler(log_path)
+
+    json_format = '{ "timestamp": "%(asctime)s", "log_level": "%(levelname)s", "message": "%(message)s" }'
+    handler.setFormatter(CustomLogFormatter(json_format))
+    the_logger.addHandler(handler)
+    new_level = logging.getLevelName(log_level.upper())
+    the_logger.setLevel(new_level)
+
+    return the_logger
+
+
 if __name__ == '__main__':
     args = get_parameters()
 
     the_logger = setup_logging(
         log_level=args.log_level.upper(),
+        log_path="${log_path}",
     )
 
     spark = PysparkJobRunner(args.database_name)
