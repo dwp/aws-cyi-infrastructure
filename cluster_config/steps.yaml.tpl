@@ -21,7 +21,6 @@ Steps:
     Args:
     - "file:/var/ci/courtesy-flush.sh"
     Jar: "s3://eu-west-2.elasticmapreduce/libs/script-runner/script-runner.jar"
-Steps:
 - Name: "create-cyi-database"
   HadoopJarStep:
     Args:
