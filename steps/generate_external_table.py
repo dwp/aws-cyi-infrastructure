@@ -149,17 +149,17 @@ class PysparkJobRunner:
                 .getOrCreate()
         )
 
-    def set_up_table_from_files(self, database_name, hive_table_name, file_location, correlation_id):
+    def set_up_table_from_files(self, database_name, managed_table_name, file_location, correlation_id):
         """Sets up table external if it doesn't exist in given DB in a file location
         Keyword arguments:
         database_name -- the DB name for the table to sit in in hive
-        hive_table_name -- the table name in hive
+        external_table_name -- the table name in hive
         file_location -- the location to hold the table data
         args --
         """
 
-        src_hive_table = database_name + "." + hive_table_name
-        src_hive_create_query = f"""CREATE EXTERNAL TABLE IF NOT EXISTS {src_hive_table}(val STRING) STORED AS TEXTFILE LOCATION "{file_location}" """
+        src_hive_table = database_name + "." + managed_table_name
+        src_hive_create_query = f"""CREATE TABLE IF NOT EXISTS {src_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS orc TBLPROPERTIES ('orc.compress'='ZLIB')"""
 
         the_logger.info(
             f"Creating table : {src_hive_table}" +
@@ -179,17 +179,14 @@ class PysparkJobRunner:
             the_logger.error(e)
 
 
-    def set_up_temp_table_with_partition(self, spark, table_prefix, date, verified_database_name, collection_json_location):
-        cyi.cyi_external_30-30
-
-
+    def set_up_temp_table_with_partition(self, table_prefix, date, verified_database_name, collection_json_location):
         date_hyphen = date.strftime("%Y-%m-%d")
-        table_name = table_prefix + "_" + date_hyphen
+        table_name = table_prefix + "_external_" + date_hyphen
         temporary_table_name = verified_database_name + "." + table_name
 
         the_logger.info(f"Attempting to create temporary table '{temporary_table_name}'")
 
-        external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) PARTITIONED BY (date_str STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
+        external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
         the_logger.info(f"Hive create query '{external_hive_create_query}'")
         external_hive_alter_query = f"""ALTER TABLE {temporary_table_name} ADD IF NOT EXISTS PARTITION(date_str='{date_hyphen}') LOCATION '{collection_json_location}'"""
 
@@ -277,16 +274,15 @@ def get_parameters():
 
     # Terraform template values
     parser.add_argument("--database_name", default="${database_name}")
-    parser.add_argument("--external_table_name", default="$(external_table_name}")
+    parser.add_argument("--managed_table_name", default="$(managed_table_name}")
     parser.add_argument("--log_level", default="${log_level}")
     args.log_level = os.environ['LOG_LEVEL'].upper() if 'LOG_LEVEL' in os.environ else "${log_level}"
     parser.add_argument("--log_path", default="${log_path}")
 
     args.hive_metastore_backend = "${hive_metastore_backend}"
-    args.hive_table_name = "${hive_table_name}"
     args.file_location = "${file_location}"
     args.published_bucket = "${published_bucket}"
-    args.published_prefix = "${published_prefix}"
+    args.published_prefix = "${published_prefix}" # TODO: cyi/external/
     args.published_s3_dir = "${published_s3_dir}"
     args.src_bucket = "${src_bucket}"
     args.table_prefix = "${table_prefix}"
@@ -305,8 +301,7 @@ if __name__ == '__main__':
     spark = PysparkJobRunner(args.database_name)
     aws = AwsCommunicator()
 
-    spark.set_up_table_from_files(args.database_name, args.hive_table_name, args.file_location, args.correlation_id)
-    aws.delete_existing_s3_files(args.published_bucket, args.published_prefix)
+    spark.set_up_table_from_files(args.database_name, args.managed_table_name, args.file_location, args.correlation_id)
 
     if args.start_date:
         date_range = get_dates_in_range(args.start_date, args.export_date)
@@ -321,6 +316,8 @@ if __name__ == '__main__':
 
     for date in date_range:
         date_str = datetime.strftime(date, "%Y-%m-%d")
+
+        aws.delete_existing_s3_files(args.published_bucket, f"{args.published_prefix}/{date_str}")
         s3_keys = aws.get_list_keys_for_prefix(args.src_bucket, f"{args.published_prefix}/{date_str}")
         destination_prefix = f"{args.published_s3_dir}/{args.database_name}/{args.external_table_name}/{date_str}"
 
