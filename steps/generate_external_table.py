@@ -9,6 +9,7 @@ from zipfile import ZipFile
 from datetime import date, timedelta, datetime
 from io import BytesIO
 from pyspark.sql import SparkSession
+from typing import List
 
 
 class CustomLogFormatter(logging.Formatter):
@@ -270,15 +271,12 @@ def get_parameters():
     return args
 
 
-def setup_logging(log_level, log_path):
+def setup_logging(log_level):
     the_logger = logging.getLogger()
     for old_handler in the_logger.handlers:
         the_logger.removeHandler(old_handler)
 
-    if log_path is None:
-        handler = logging.StreamHandler(sys.stdout)
-    else:
-        handler = logging.FileHandler(log_path)
+    handler = logging.StreamHandler(sys.stdout)
 
     json_format = '{ "timestamp": "%(asctime)s", "log_level": "%(levelname)s", "message": "%(message)s" }'
     handler.setFormatter(CustomLogFormatter(json_format))
@@ -294,7 +292,6 @@ if __name__ == '__main__':
 
     the_logger = setup_logging(
         log_level=args.log_level.upper(),
-        log_path="${log_path}",
     )
 
     spark = PysparkJobRunner(args.database_name)
