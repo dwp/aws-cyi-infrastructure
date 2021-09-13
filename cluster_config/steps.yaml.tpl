@@ -25,12 +25,6 @@ Steps:
     - "file:/var/ci/courtesy-flush.sh"
     Jar: "s3://eu-west-2.elasticmapreduce/libs/script-runner/script-runner.jar"
   ActionOnFailure: "CONTINUE"
-- Name: "create-cyi-database"
-  HadoopJarStep:
-    Args:
-    - "file:/var/ci/create-cyi-database.sh"
-    Jar: "s3://eu-west-2.elasticmapreduce/libs/script-runner/script-runner.jar"
-  ActionOnFailure: "${action_on_failure}"
 - Name: "run-cyi"
   HadoopJarStep:
     Args:

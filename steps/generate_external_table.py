@@ -152,23 +152,43 @@ class AwsCommunicator:
 
 
 class PysparkJobRunner:
-    def __init__(self, database_name):
+    def __init__(self):
         self.spark_session = (
             SparkSession.builder.master("yarn")
-            .config("spark.metrics.conf", "/opt/emr/metrics/metrics.properties")
-            .config("spark.metrics.namespace", f"{database_name}")
             .config("spark.executor.heartbeatInterval", "300000")
             .config("spark.storage.blockManagerSlaveTimeoutMs", "500000")
             .config("spark.network.timeout", "500000")
             .config("spark.hadoop.fs.s3.maxRetries", "20")
             .config("spark.rpc.numRetries", "10")
             .config("spark.task.maxFailures", "10")
-            .config("spark.scheduler.mode", "FAIR")
             .config("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
             .appName("spike")
             .enableHiveSupport()
             .getOrCreate()
         )
+
+
+    def create_database(
+        self
+    ):
+        """Creates the database if not exists"""
+
+        create_db_query = "CREATE DATABASE IF NOT EXISTS ${target_db}"
+
+        the_logger.info(
+            f"Creating database"
+        )
+        try:
+            self.spark_session.sql(create_db_query)
+            the_logger.info(
+                f"Created database"
+            )
+        except Exception as e:
+            the_logger.info(
+                f"Failed to create database"
+            )
+            the_logger.error(e)
+
 
     def set_up_table_from_files(
         self, database_name, managed_table_name, correlation_id
@@ -313,8 +333,10 @@ if __name__ == "__main__":
 
     args = get_parameters()
 
-    spark = PysparkJobRunner(args.database_name)
+    spark = PysparkJobRunner()
     aws = AwsCommunicator()
+    
+    spark.create_database()
 
     spark.set_up_table_from_files(
         args.database_name, args.managed_table_name, args.correlation_id
@@ -323,7 +345,7 @@ if __name__ == "__main__":
     if args.start_date:
         date_range = get_dates_in_range(args.start_date, args.export_date)
     else:
-        date_range = [datetime(args.export_date)]
+        date_range = [datetime.strptime(args.export_date, "%Y-%m-%d")]
 
     for date in date_range:
         date_str = datetime.strftime(date, "%Y-%m-%d")
