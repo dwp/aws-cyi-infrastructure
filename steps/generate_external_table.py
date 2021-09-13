@@ -307,8 +307,6 @@ def setup_logging(log_level):
 
 
 if __name__ == "__main__":
-    global the_logger
-
     the_logger = setup_logging(
         log_level=os.environ["LOG_LEVEL"].upper() if "LOG_LEVEL" in os.environ else "${log_level}",
     )
