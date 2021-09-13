@@ -32,7 +32,7 @@ resource "aws_s3_bucket_object" "generate_external_table" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
   key        = "component/cyi/generate_external_table.py"
-  content = templatefile("${path.module}/steps/generate_external_table",
+  content = templatefile("${path.module}/steps/generate_external_table.py",
     {
       database_name       = "cyi"
       managed_table_name  = "cyi_managed"
