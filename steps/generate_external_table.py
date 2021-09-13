@@ -241,9 +241,7 @@ def get_dates_in_range(start_date, export_date) -> List[datetime]:
     days_difference = datetime(export_date) - datetime(start_date)
     days = days_difference.days
 
-    dates = [start_date + timedelta(days=i) for i in range(days+1)]
-
-    return dates
+    return [start_date + timedelta(days=i) for i in range(days+1)]
 
 def get_parameters():
     """Define and parse command line args."""
