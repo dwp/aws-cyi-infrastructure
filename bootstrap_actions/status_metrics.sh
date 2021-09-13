@@ -36,7 +36,6 @@
 
   CORRELATION_ID=$(cat $CORRELATION_ID_FILE)
   EXPORT_DATE=$(cat $EXPORT_DATE_FILE)
-  SNAPSHOT_TYPE="NOT_SET"
 
   if [[ -z "$EXPORT_DATE" ]]; then
     log_wrapper_message "Export date from file was empty, so defaulting to today's date"
@@ -49,7 +48,7 @@
     log_wrapper_message "Sending to push gateway with value $1"
 
     cat << EOF | curl --data-binary @- "http://${aws_cyi_infrastructure_pushgateway_hostname}:9091/metrics/job/cyi"
-                aws_cyi_infrastructure_status{snapshot_type="$SNAPSHOT_TYPE", export_date="$EXPORT_DATE", cluster_id="$CLUSTER_ID", component="cyi", correlation_id="$CORRELATION_ID"} $1
+                cyi_status{export_date="$EXPORT_DATE", cluster_id="$CLUSTER_ID", component="cyi", correlation_id="$CORRELATION_ID"} $1
 EOF
   }
 

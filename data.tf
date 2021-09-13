@@ -23,10 +23,8 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_write_data" {
     ]
 
     resources = [
-      "${data.terraform_remote_state.common.outputs.published_bucket.arn}/pdm-dataset/*",
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/metrics/*",
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/common-model-inputs/*",
-      "${data.terraform_remote_state.common.outputs.published_bucket.arn}/analytical-dataset/*",
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/data",
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/data/*",
     ]
@@ -44,14 +42,18 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_write_data" {
     ]
 
     resources = [
-      "${data.terraform_remote_state.common.outputs.published_bucket_cmk.arn}",
+      data.terraform_remote_state.common.outputs.published_bucket_cmk.arn,
     ]
   }
 }
 
 resource "aws_iam_policy" "aws_cyi_infrastructure_write_data" {
-  name        = "AwsEMRWriteData"
+  name        = "AwsCYIEMRWriteData"
   description = "Allow writing of aws-emr-template files and metrics"
   policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_write_data.json
 }
 
+resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_write_data" {
+  role       = aws_iam_role.aws_cyi_infrastructure.name
+  policy_arn = aws_iam_policy.aws_cyi_infrastructure_write_data.arn
+}

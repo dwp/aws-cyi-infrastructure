@@ -94,6 +94,24 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<CWAGEN
             "log_group_name": "$${cwa_steps_loggrp_name}",
             "log_stream_name": "{instance_id}-create-cyi-databases.log",
             "timezone": "UTC"
+          },
+          {
+            "file_path": "/var/log/cyi/e2e.log",
+            "log_group_name": "$${cwa_steps_loggrp_name}",
+            "log_stream_name": "{instance_id}-e2e.log",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/var/log/cyi/courtesy_flush.log",
+            "log_group_name": "$${cwa_steps_loggrp_name}",
+            "log_stream_name": "{instance_id}-courtesy-flush.log",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/var/log/cyi/flush_pushgateway.log",
+            "log_group_name": "$${cwa_steps_loggrp_name}",
+            "log_stream_name": "{instance_id}-flush-pushgateway.log",
+            "timezone": "UTC"
           }
         ]
       }

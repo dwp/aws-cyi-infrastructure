@@ -207,6 +207,7 @@ resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_emr_launcher_s
 }
 
 resource "aws_lambda_event_source_mapping" "cyi_sqs_event_source_mapping" {
+  count            = local.cyi_active[local.environment] == true ? 1 : 0
   event_source_arn = data.terraform_remote_state.ingestion.outputs.cyi_fileshare_sqs.arn
   function_name    = aws_lambda_function.aws_cyi_infrastructure_emr_launcher.arn
 }
