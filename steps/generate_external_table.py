@@ -252,7 +252,7 @@ def get_parameters():
     args.managed_table_name = "${managed_table_name}"
     args.published_bucket = "${published_bucket}"
     args.src_bucket = "${src_bucket}"
-    args.src_prefix = "${src_prefix}"
+    args.src_s3_prefix = "${src_s3_prefix}"
     args.table_prefix = "${table_prefix}"
 
     return args
@@ -280,7 +280,7 @@ if __name__ == '__main__':
         destination_prefix = f"{args.published_bucket}/{args.database_name}/external/{date_str}"
 
         aws.delete_existing_s3_files(args.published_bucket, destination_prefix)
-        s3_keys = aws.get_list_keys_for_prefix(args.src_bucket, f"{args.src_prefix}/{date_str}")
+        s3_keys = aws.get_list_keys_for_prefix(args.src_bucket, f"{args.src_s3_prefix}/{date_str}")
 
         for s3_key in s3_keys:
             decompressed_dict = S3Decompressor(args.src_bucket, s3_key).decompressed_dict
