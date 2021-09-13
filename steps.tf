@@ -28,6 +28,24 @@ resource "aws_s3_bucket_object" "run_cyi" {
   )
 }
 
+resource "aws_s3_bucket_object" "generate_external_table" {
+  bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
+  kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn
+  key        = "component/cyi/generate_external_table.py"
+  content = templatefile("${path.module}/steps/generate_external_table",
+  {
+    database_name = "cyi"
+    managed_table_name = "cyi_managed"
+    external_table_name = "cyi_external"
+    table_prefix = "cyi"
+    published_bucket = format("s3://%s", data.terraform_remote_state.common.outputs.published_bucket.id)
+    src_bucket = format("s3://%s", data.terraform_remote_state.ingestion.outputs.s3_buckets.input_bucket.id)
+    src_s3_prefix = "cyi/"
+    log_level = "INFO"
+  }
+  )
+}
+
 resource "aws_s3_bucket_object" "flush_pushgateway" {
   bucket     = data.terraform_remote_state.common.outputs.config_bucket.id
   kms_key_id = data.terraform_remote_state.common.outputs.config_bucket_cmk.arn

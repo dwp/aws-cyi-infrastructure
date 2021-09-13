@@ -149,12 +149,12 @@ class PysparkJobRunner:
                 .getOrCreate()
         )
 
-    def set_up_table_from_files(self, database_name, managed_table_name, file_location, correlation_id):
+    def set_up_table_from_files(self, database_name, managed_table_name, correlation_id):
         """Sets up table external if it doesn't exist in given DB in a file location
         Keyword arguments:
         database_name -- the DB name for the table to sit in in hive
-        external_table_name -- the table name in hive
-        file_location -- the location to hold the table data
+        managed_table_name -- the table name in hive
+        correlation_id -- correlation ID for the run at hand
         args --
         """
 
@@ -179,10 +179,10 @@ class PysparkJobRunner:
             the_logger.error(e)
 
 
-    def set_up_temp_table_with_partition(self, table_prefix, date, verified_database_name, collection_json_location):
+    def set_up_temp_table_with_partition(self, table_prefix, date, database_name, collection_json_location):
         date_hyphen = date.strftime("%Y-%m-%d")
         table_name = table_prefix + "_external_" + date_hyphen
-        temporary_table_name = verified_database_name + "." + table_name
+        temporary_table_name = database_name + "." + table_name
 
         the_logger.info(f"Attempting to create temporary table '{temporary_table_name}'")
 
@@ -232,33 +232,6 @@ def get_dates_in_range(start_date, export_date) -> List[datetime]:
 
     return dates
 
-
-def create_metastore_db(
-        spark,
-        published_database_name,
-        args,
-):
-    verified_database_name = published_database_name
-    # Check to create database only if the backend is Aurora as Glue database is created through terraform
-    if args.hive_metastore_backend == "aurora":
-        try:
-            the_logger.info(
-                "Creating metastore db with name of %s while processing correlation_id %s",
-                verified_database_name,
-                args.correlation_id,
-            )
-
-            create_db_query = f"CREATE DATABASE IF NOT EXISTS {verified_database_name}"
-            spark.sql(create_db_query)
-        except BaseException as ex:
-            the_logger.error(
-                "Error occurred creating hive metastore backend %s",
-                repr(ex),
-            )
-            raise BaseException(ex)
-
-    return verified_database_name
-
 def get_parameters():
     """Define and parse command line args."""
     parser = argparse.ArgumentParser(
@@ -266,25 +239,21 @@ def get_parameters():
     )
     # Parse command line inputs and set defaults
     parser.add_argument("--correlation_id", default="NOT_SET")
-    parser.add_argument("--s3_prefix", default="NOT_SET")
-    parser.add_argument("--s3_bucket", default="NOT_SET")
     parser.add_argument("--export_date", default=datetime.now())
     parser.add_argument("--start_date", default="")
-    parser.add_argument("--correlation_id", default="NOT_SET")
 
     # Terraform template values
     parser.add_argument("--database_name", default="${database_name}")
     parser.add_argument("--managed_table_name", default="$(managed_table_name}")
     parser.add_argument("--log_level", default="${log_level}")
     args.log_level = os.environ['LOG_LEVEL'].upper() if 'LOG_LEVEL' in os.environ else "${log_level}"
-    parser.add_argument("--log_path", default="${log_path}")
 
-    args.hive_metastore_backend = "${hive_metastore_backend}"
-    args.file_location = "${file_location}"
+    args.external_table_name = "${external_table_name}"
+    args.managed_table_name = "${managed_table_name}"
     args.published_bucket = "${published_bucket}"
-    args.published_prefix = "${published_prefix}" # TODO: cyi/external/
-    args.published_s3_dir = "${published_s3_dir}"
+    args.published_s3_prefix = "${published_s3_prefix}"
     args.src_bucket = "${src_bucket}"
+    args.src_prefix = "${src_prefix}"
     args.table_prefix = "${table_prefix}"
 
     return args
@@ -295,31 +264,24 @@ if __name__ == '__main__':
 
     the_logger = setup_logging(
         log_level=args.log_level.upper(),
-        log_path=args.log_path
     )
 
     spark = PysparkJobRunner(args.database_name)
     aws = AwsCommunicator()
 
-    spark.set_up_table_from_files(args.database_name, args.managed_table_name, args.file_location, args.correlation_id)
+    spark.set_up_table_from_files(args.database_name, args.managed_table_name, args.correlation_id)
 
     if args.start_date:
         date_range = get_dates_in_range(args.start_date, args.export_date)
     else:
         date_range = [datetime(args.export_date)]
 
-    verified_database_name = create_metastore_db(
-        spark,
-        args.database_name,
-        args,
-    )
-
     for date in date_range:
         date_str = datetime.strftime(date, "%Y-%m-%d")
+        destination_prefix = f"{args.published_bucket}/{args.database_name}/external/{date_str}"
 
-        aws.delete_existing_s3_files(args.published_bucket, f"{args.published_prefix}/{date_str}")
-        s3_keys = aws.get_list_keys_for_prefix(args.src_bucket, f"{args.published_prefix}/{date_str}")
-        destination_prefix = f"{args.published_s3_dir}/{args.database_name}/{args.external_table_name}/{date_str}"
+        aws.delete_existing_s3_files(args.published_bucket, destination_prefix)
+        s3_keys = aws.get_list_keys_for_prefix(args.src_bucket, f"{args.src_prefix}/{date_str}")
 
         for s3_key in s3_keys:
             decompressed_dict = S3Decompressor(args.src_bucket, s3_key).decompressed_dict
@@ -332,10 +294,9 @@ if __name__ == '__main__':
                     destination_prefix
                 )
 
-                temp_tbl = PysparkJobRunner.set_up_temp_table_with_partition(spark,
-                                                                             args.table_prefix,
+                temp_tbl = PysparkJobRunner.set_up_temp_table_with_partition(args.table_prefix,
                                                                              date,
-                                                                             verified_database_name,
+                                                                             args.database_name,
                                                                              destination_prefix)
 
                 PysparkJobRunner.merge_temp_table_with_main(temp_tbl, args.database_name, args.external_table_name)

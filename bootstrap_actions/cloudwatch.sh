@@ -96,6 +96,12 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<CWAGEN
             "timezone": "UTC"
           },
           {
+            "file_path": "/var/log/cyi/run-cyi.log",
+            "log_group_name": "$${cwa_steps_loggrp_name}",
+            "log_stream_name": "{instance_id}-run-cyi.log",
+            "timezone": "UTC"
+          },
+          {
             "file_path": "/var/log/cyi/e2e.log",
             "log_group_name": "$${cwa_steps_loggrp_name}",
             "log_stream_name": "{instance_id}-e2e.log",
