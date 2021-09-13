@@ -95,6 +95,7 @@ Configurations:
   Properties:
     "fs.s3.maxConnections": "10000"
     "fs.s3.maxRetries": "20"
+
 - Classification: "spark-env"
   Configurations:
   - Classification: "export"
@@ -109,6 +110,7 @@ Configurations:
     Properties:
       "HADOOP_NAMENODE_OPTS": "\"-javaagent:/opt/emr/metrics/dependencies/jmx_prometheus_javaagent-0.14.0.jar=7101:/opt/emr/metrics/prometheus_config.yml\""
       "HADOOP_DATANODE_OPTS": "\"-javaagent:/opt/emr/metrics/dependencies/jmx_prometheus_javaagent-0.14.0.jar=7103:/opt/emr/metrics/prometheus_config.yml\""
+
 - Classification: "yarn-env"
   Configurations:
   - Classification: "export"

@@ -28,6 +28,7 @@
     fi
 
     sudo -E $PIP install boto3
+    sudo -E $PIP install pyspark
 
     #shellcheck disable=SC2024
     {
