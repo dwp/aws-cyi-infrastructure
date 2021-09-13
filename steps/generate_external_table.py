@@ -251,7 +251,6 @@ def get_parameters():
     args.external_table_name = "${external_table_name}"
     args.managed_table_name = "${managed_table_name}"
     args.published_bucket = "${published_bucket}"
-    args.published_s3_prefix = "${published_s3_prefix}"
     args.src_bucket = "${src_bucket}"
     args.src_prefix = "${src_prefix}"
     args.table_prefix = "${table_prefix}"
