@@ -12,6 +12,10 @@ from io import BytesIO
 from pyspark.sql import SparkSession
 from typing import List
 
+the_logger = setup_logging(
+    log_level=os.environ["LOG_LEVEL"].upper() if "LOG_LEVEL" in os.environ else "${log_level}",
+)
+
 
 class CustomLogFormatter(logging.Formatter):
     converter = dt.datetime.fromtimestamp
@@ -176,7 +180,6 @@ class PysparkJobRunner:
         database_name -- the DB name for the table to sit in in hive
         managed_table_name -- the table name in hive
         correlation_id -- correlation ID for the run at hand
-        args --
         """
 
         src_hive_table = database_name + "." + managed_table_name
@@ -270,9 +273,14 @@ def get_parameters():
     parser.add_argument("--database_name", default="${database_name}")
     parser.add_argument("--managed_table_name", default="$(managed_table_name}")
     parser.add_argument("--log_level", default="${log_level}")
-    args.log_level = (
-        os.environ["LOG_LEVEL"].upper() if "LOG_LEVEL" in os.environ else "${log_level}"
-    )
+
+    args, unrecognized_args = parser.parse_known_args()
+
+    if len(unrecognized_args) > 0:
+        the_logger.warning(
+            "Unrecognized args %s found",
+            unrecognized_args,
+        )
 
     args.external_table_name = "${external_table_name}"
     args.managed_table_name = "${managed_table_name}"
@@ -302,10 +310,6 @@ def setup_logging(log_level):
 
 if __name__ == "__main__":
     args = get_parameters()
-
-    the_logger = setup_logging(
-        log_level=args.log_level.upper(),
-    )
 
     spark = PysparkJobRunner(args.database_name)
     aws = AwsCommunicator()
