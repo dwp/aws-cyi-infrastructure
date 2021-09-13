@@ -15,6 +15,9 @@ BootstrapActions:
 - Name: "metrics-setup"
   ScriptBootstrapAction:
     Path: "file:/var/ci/metrics-setup.sh"
+- Name: "installer"
+  ScriptBootstrapAction:
+    Path: "file:/var/ci/installer.sh"
 Steps:
 - Name: "courtesy-flush"
   HadoopJarStep:
