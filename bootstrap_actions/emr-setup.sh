@@ -102,10 +102,11 @@ EOF
 
     instance=$(curl -H "X-aws-ec2-metadata-token:$TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id)
     role=$(jq .instanceRole /mnt/var/lib/info/extraInstanceData.json)
-    host="${name}-$${INSTANCE_ROLE//\"}-$UUID"
     
     export INSTANCE_ID="$instance"
     export INSTANCE_ROLE="$role"
+
+    host="${name}-$${INSTANCE_ROLE//\"}-$UUID"
     export HOSTNAME="$host"
 
     hostnamectl set-hostname "$HOSTNAME"
