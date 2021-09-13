@@ -3,6 +3,7 @@ import gzip
 import os
 import logging
 import sys
+import argparse
 import datetime as dt
 
 from zipfile import ZipFile
@@ -13,7 +14,8 @@ from typing import List
 
 
 class CustomLogFormatter(logging.Formatter):
-    converter=dt.datetime.fromtimestamp
+    converter = dt.datetime.fromtimestamp
+
     def formatTime(self, record, datefmt=None):
         ct = self.converter(record.created)
         if datefmt:
@@ -26,7 +28,7 @@ class CustomLogFormatter(logging.Formatter):
 
 class S3Decompressor:
     def __init__(self, s3_object, s3_key):
-        self.decompressed_dict = self._unzip_s3_object(self, s3_object, s3_key)
+        self.decompressed_dict = self._unzip_s3_object(s3_object, s3_key)
 
     decompressed_dict = {}
 
@@ -37,17 +39,17 @@ class S3Decompressor:
         :param s3_key: S3 key of object (String - "<s3_prefix>/<s3_object_name>")
         :return: Dict of all files in compressed file {file_name: file_body_byte_array}
         """
-        file_type = s3_key.split('.')[-1]
+        file_type = s3_key.split(".")[-1]
 
         if file_type == "zip":
-            return self._use_zip(s3_object, s3_key)
+            return self._use_zip(s3_object)
         elif file_type == "gzip":
             return self._use_gzip(s3_object, s3_key)
         else:
             print(f".{file_type} is an unsupported file compression type")
             print("Supported file types are: .zip and .gzip")
 
-    def _use_zip(s3_object):
+    def _use_zip(self, s3_object):
         """
         Description -- unzips .zip files from s3
         :param s3_object: The object returned from boto3.resource('s3').Object(...) call
@@ -56,16 +58,19 @@ class S3Decompressor:
         buffer = BytesIO(s3_object.get()["Body"].read())
         zip_obj = ZipFile(buffer)
 
-        return {file_name: zip_obj.open(file_name).read() for file_name in zip_obj.namelist()}
+        return {
+            file_name: zip_obj.open(file_name).read()
+            for file_name in zip_obj.namelist()
+        }
 
-    def _use_gzip(s3_object, s3_key):
+    def _use_gzip(self, s3_object, s3_key):
         """
         Description -- unzips .gz files from s3
         :param s3_object: The object returned from boto3.resource('s3').Object(...) call
         :param s3_key: S3 key of object (String - "<s3_prefix>/<s3_object_name>")
         :return: Dict of {file_name: file_body_byte_array}
         """
-        s3_file_name = '.'.join(s3_key.split('/')[-1].split('.')[:2])
+        s3_file_name = ".".join(s3_key.split("/")[-1].split(".")[:2])
 
         with gzip.GzipFile(fileobj=s3_object.get()["Body"]) as gzipfile:
             body = gzipfile.read()
@@ -75,8 +80,8 @@ class S3Decompressor:
 
 class AwsCommunicator:
     def __init__(self):
-        self.s3_resource = boto3.resource('s3')
-        self.s3_client = boto3.client('s3')
+        self.s3_resource = boto3.resource("s3")
+        self.s3_client = boto3.client("s3")
         self.s3_bucket = None
 
     def _set_s3_bucket(self, s3_bucket_name):
@@ -97,9 +102,7 @@ class AwsCommunicator:
         :return: put_object response
         """
         return self.s3_client.put_object(
-            Body=file_body,
-            Bucket=s3_bucket_name,
-            Key=f'{s3_prefix}/{file_name}'
+            Body=file_body, Bucket=s3_bucket_name, Key=f"{s3_prefix}/{file_name}"
         )
 
     def get_list_keys_for_prefix(self, s3_bucket, s3_prefix):
@@ -150,22 +153,24 @@ class PysparkJobRunner:
     def __init__(self, database_name):
         self.spark_session = (
             SparkSession.builder.master("yarn")
-                .config("spark.metrics.conf", "/opt/emr/metrics/metrics.properties")
-                .config("spark.metrics.namespace", f"{database_name}")
-                .config("spark.executor.heartbeatInterval", "300000")
-                .config("spark.storage.blockManagerSlaveTimeoutMs", "500000")
-                .config("spark.network.timeout", "500000")
-                .config("spark.hadoop.fs.s3.maxRetries", "20")
-                .config("spark.rpc.numRetries", "10")
-                .config("spark.task.maxFailures", "10")
-                .config("spark.scheduler.mode", "FAIR")
-                .config("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
-                .appName("spike")
-                .enableHiveSupport()
-                .getOrCreate()
+            .config("spark.metrics.conf", "/opt/emr/metrics/metrics.properties")
+            .config("spark.metrics.namespace", f"{database_name}")
+            .config("spark.executor.heartbeatInterval", "300000")
+            .config("spark.storage.blockManagerSlaveTimeoutMs", "500000")
+            .config("spark.network.timeout", "500000")
+            .config("spark.hadoop.fs.s3.maxRetries", "20")
+            .config("spark.rpc.numRetries", "10")
+            .config("spark.task.maxFailures", "10")
+            .config("spark.scheduler.mode", "FAIR")
+            .config("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
+            .appName("spike")
+            .enableHiveSupport()
+            .getOrCreate()
         )
 
-    def set_up_table_from_files(self, database_name, managed_table_name, correlation_id):
+    def set_up_table_from_files(
+        self, database_name, managed_table_name, correlation_id
+    ):
         """Sets up table external if it doesn't exist in given DB in a file location
         Keyword arguments:
         database_name -- the DB name for the table to sit in in hive
@@ -178,29 +183,38 @@ class PysparkJobRunner:
         src_hive_create_query = f"""CREATE TABLE IF NOT EXISTS {src_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS orc TBLPROPERTIES ('orc.compress'='ZLIB')"""
 
         the_logger.info(
-            f"Creating table : {src_hive_table}" +
-            f" for correlation id : {correlation_id}" if correlation_id else ""
+            f"Creating table : {src_hive_table}"
+            + f" for correlation id : {correlation_id}"
+            if correlation_id
+            else ""
         )
         try:
             self.spark_session.sql(src_hive_create_query)
             the_logger.info(
-                f"Created table : {src_hive_table}" +
-                f" for correlation id : {correlation_id}" if correlation_id else ""
+                f"Created table : {src_hive_table}"
+                + f" for correlation id : {correlation_id}"
+                if correlation_id
+                else ""
             )
         except Exception as e:
             the_logger.info(
-                f"Failed to create table : {src_hive_table}" +
-                f" for correlation id : {correlation_id}" if correlation_id else ""
+                f"Failed to create table : {src_hive_table}"
+                + f" for correlation id : {correlation_id}"
+                if correlation_id
+                else ""
             )
             the_logger.error(e)
 
-
-    def set_up_temp_table_with_partition(self, table_prefix, date, database_name, collection_json_location):
+    def set_up_temp_table_with_partition(
+        self, table_prefix, date, database_name, collection_json_location
+    ):
         date_hyphen = date.strftime("%Y-%m-%d")
         table_name = table_prefix + "_external_" + date_hyphen
         temporary_table_name = database_name + "." + table_name
 
-        the_logger.info(f"Attempting to create temporary table '{temporary_table_name}'")
+        the_logger.info(
+            f"Attempting to create temporary table '{temporary_table_name}'"
+        )
 
         external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
         the_logger.info(f"Hive create query '{external_hive_create_query}'")
@@ -223,14 +237,12 @@ class PysparkJobRunner:
             )
         except Exception as e:
             the_logger.error(
-                f"Failed to merge table '{temp_tbl}' into '{main_database_tbl}'"
+                f"Failed to merge table '{temp_tbl}' into '{main_database_tbl}' with error '{e}'"
             )
 
     def cleanup_table(self, main_database, table_name):
         drop_query = f"""DROP TABLE IF EXISTS {main_database}.{temp_tbl}"""
-        the_logger.info(
-            f"Dropped table '{table_name}' successfully"
-        )
+        the_logger.info(f"Dropped table '{table_name}' successfully")
         self.spark_session.sql(drop_query)
 
 
@@ -241,7 +253,8 @@ def get_dates_in_range(start_date, export_date) -> List[datetime]:
     days_difference = datetime(export_date) - datetime(start_date)
     days = days_difference.days
 
-    return [start_date + timedelta(days=i) for i in range(days+1)]
+    return [start_date + timedelta(days=i) for i in range(days + 1)]
+
 
 def get_parameters():
     """Define and parse command line args."""
@@ -257,7 +270,9 @@ def get_parameters():
     parser.add_argument("--database_name", default="${database_name}")
     parser.add_argument("--managed_table_name", default="$(managed_table_name}")
     parser.add_argument("--log_level", default="${log_level}")
-    args.log_level = os.environ['LOG_LEVEL'].upper() if 'LOG_LEVEL' in os.environ else "${log_level}"
+    args.log_level = (
+        os.environ["LOG_LEVEL"].upper() if "LOG_LEVEL" in os.environ else "${log_level}"
+    )
 
     args.external_table_name = "${external_table_name}"
     args.managed_table_name = "${managed_table_name}"
@@ -285,7 +300,7 @@ def setup_logging(log_level):
     return the_logger
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = get_parameters()
 
     the_logger = setup_logging(
@@ -295,7 +310,9 @@ if __name__ == '__main__':
     spark = PysparkJobRunner(args.database_name)
     aws = AwsCommunicator()
 
-    spark.set_up_table_from_files(args.database_name, args.managed_table_name, args.correlation_id)
+    spark.set_up_table_from_files(
+        args.database_name, args.managed_table_name, args.correlation_id
+    )
 
     if args.start_date:
         date_range = get_dates_in_range(args.start_date, args.export_date)
@@ -304,29 +321,36 @@ if __name__ == '__main__':
 
     for date in date_range:
         date_str = datetime.strftime(date, "%Y-%m-%d")
-        destination_prefix = f"{args.published_bucket}/{args.database_name}/external/{date_str}"
+        destination_prefix = (
+            f"{args.published_bucket}/{args.database_name}/external/{date_str}"
+        )
 
         aws.delete_existing_s3_files(args.published_bucket, destination_prefix)
-        s3_keys = aws.get_list_keys_for_prefix(args.src_bucket, f"{args.src_s3_prefix}/{date_str}")
+        s3_keys = aws.get_list_keys_for_prefix(
+            args.src_bucket, f"{args.src_s3_prefix}/{date_str}"
+        )
 
         for s3_key in s3_keys:
-            decompressed_dict = S3Decompressor(args.src_bucket, s3_key).decompressed_dict
+            decompressed_dict = S3Decompressor(
+                args.src_bucket, s3_key
+            ).decompressed_dict
 
             for file_name in decompressed_dict:
                 aws.upload_to_bucket(
                     file_name,
                     decompressed_dict[file_name],
                     args.published_bucket,
-                    destination_prefix
+                    destination_prefix,
                 )
 
-                temp_tbl = PysparkJobRunner.set_up_temp_table_with_partition(args.table_prefix,
-                                                                             date,
-                                                                             args.database_name,
-                                                                             destination_prefix)
+                temp_tbl = spark.set_up_temp_table_with_partition(
+                    args.table_prefix, date, args.database_name, destination_prefix
+                )
 
-                PysparkJobRunner.merge_temp_table_with_main(temp_tbl, args.database_name, args.external_table_name)
+                spark.merge_temp_table_with_main(
+                    temp_tbl, args.database_name, args.external_table_name
+                )
 
-                PysparkJobRunner.clean_up_table(args.database_name, temp_tbl)
+                spark.cleanup_table(args.database_name, temp_tbl)
 
     the_logger.info(f"Completed import for export date '{args.export_date}'")
