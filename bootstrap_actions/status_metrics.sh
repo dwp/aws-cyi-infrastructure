@@ -45,7 +45,7 @@
   processed_files=()
 
   push_metric() {
-    log_wrapper_message "Sending to push gateway with value $1"
+    log_wrapper_message "Sending to push gateway host named '${aws_cyi_infrastructure_pushgateway_hostname}' with value of $1"
 
     cat << EOF | curl --data-binary @- "http://${aws_cyi_infrastructure_pushgateway_hostname}:9091/metrics/job/cyi"
                 cyi_status{export_date="$EXPORT_DATE", cluster_id="$CLUSTER_ID", component="cyi", correlation_id="$CORRELATION_ID"} $1
