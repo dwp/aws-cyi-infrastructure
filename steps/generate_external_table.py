@@ -12,9 +12,7 @@ from io import BytesIO
 from pyspark.sql import SparkSession
 from typing import List
 
-the_logger = setup_logging(
-    log_level=os.environ["LOG_LEVEL"].upper() if "LOG_LEVEL" in os.environ else "${log_level}",
-)
+the_logger = None
 
 
 class CustomLogFormatter(logging.Formatter):
@@ -293,22 +291,28 @@ def get_parameters():
 
 
 def setup_logging(log_level):
-    the_logger = logging.getLogger()
-    for old_handler in the_logger.handlers:
-        the_logger.removeHandler(old_handler)
+    logger = logging.getLogger()
+    for old_handler in logger.handlers:
+        logger.removeHandler(old_handler)
 
     handler = logging.StreamHandler(sys.stdout)
 
     json_format = '{ "timestamp": "%(asctime)s", "log_level": "%(levelname)s", "message": "%(message)s" }'
     handler.setFormatter(CustomLogFormatter(json_format))
-    the_logger.addHandler(handler)
+    logger.addHandler(handler)
     new_level = logging.getLevelName(log_level.upper())
-    the_logger.setLevel(new_level)
+    logger.setLevel(new_level)
 
-    return the_logger
+    return logger
 
 
 if __name__ == "__main__":
+    global the_logger
+
+    the_logger = setup_logging(
+        log_level=os.environ["LOG_LEVEL"].upper() if "LOG_LEVEL" in os.environ else "${log_level}",
+    )
+
     args = get_parameters()
 
     spark = PysparkJobRunner(args.database_name)
