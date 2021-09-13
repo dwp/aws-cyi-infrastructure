@@ -225,10 +225,7 @@ def get_dates_in_range(start_date, export_date) -> List[datetime]:
     days_difference = datetime(export_date) - datetime(start_date)
     days = days_difference.days
 
-    dates = []
-    for day in days:
-        days - 1
-        dates.append(export_date - timedelta(days=day))
+    dates = [start_date + timedelta(days=i) for i in range(days+1)]
 
     return dates
 
