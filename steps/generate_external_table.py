@@ -58,7 +58,7 @@ class S3Decompressor:
         :param s3_object: The object returned from boto3.resource('s3').Object(...) call
         :return: Dict of all files in compressed file {file_name: file_body_byte_array}
         """
-        buffer = BytesIO(s3_object.get()["Body"].read())
+        buffer = BytesIO(s3_object["Body"].read())
         zip_obj = ZipFile(buffer)
 
         return {
@@ -76,7 +76,7 @@ class S3Decompressor:
         s3_key = s3_object["Key"]
         s3_file_name = ".".join(s3_key.split("/")[-1].split(".")[:2])
 
-        with gzip.GzipFile(fileobj=s3_object.get()["Body"]) as gzipfile:
+        with gzip.GzipFile(fileobj=s3_object["Body"]) as gzipfile:
             body = gzipfile.read()
 
         return {s3_file_name: body}
