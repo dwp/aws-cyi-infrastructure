@@ -293,7 +293,7 @@ def get_parameters():
 
     # Terraform template values
     parser.add_argument("--database_name", default="${database_name}")
-    parser.add_argument("--managed_table_name", default="$(managed_table_name}")
+    parser.add_argument("--managed_table_name", default="${managed_table_name}")
     parser.add_argument("--log_level", default="${log_level}")
 
     args, unrecognized_args = parser.parse_known_args()
@@ -305,7 +305,6 @@ def get_parameters():
         )
 
     args.external_table_name = "${external_table_name}"
-    args.managed_table_name = "${managed_table_name}"
     args.published_bucket = "${published_bucket}"
     args.src_bucket = "${src_bucket}"
     args.src_s3_prefix = "${src_s3_prefix}"
