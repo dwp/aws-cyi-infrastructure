@@ -30,9 +30,9 @@ class CustomLogFormatter(logging.Formatter):
 
 class S3Decompressor:
     def __init__(self, file_name, file_body):
-        self.decompressed_dict = self._unzip_s3_object(file_name, file_body)
+        self.decompressed_pair_list = self._unzip_s3_object(file_name, file_body)
 
-    decompressed_dict = {}
+    decompressed_pair_list = {}
 
     def _unzip_s3_object(self, file_name, file_body):
         """
@@ -80,18 +80,8 @@ class S3Decompressor:
 
 class AwsCommunicator:
     def __init__(self):
-        self.s3_resource = boto3.resource("s3")
         self.s3_client = boto3.client("s3")
         self.s3_bucket = None
-
-    def _set_s3_bucket(self, s3_bucket_name):
-        self.s3_bucket = self.s3_resource.Bucket(s3_bucket_name)
-
-    def get_s3_object(self, s3_bucket_name, s3_key):
-        if self.s3_bucket is None:
-            self._set_s3_bucket(s3_bucket_name)
-
-        return self.s3_resource.Object(bucket_name=s3_bucket_name, key=s3_key)
 
     def upload_to_bucket(self, file_name, file_body, s3_bucket_name, s3_prefix):
         """
@@ -253,7 +243,7 @@ class PysparkJobRunner:
         self, table_prefix, date, database_name, collection_json_location
     ):
         date_hyphen = date.strftime("%Y-%m-%d")
-        table_name = table_prefix + "_external_" + date_hyphen
+        table_name = table_prefix + "_external_" + date_hyphen.replace('-', '_')
         temporary_table_name = database_name + "." + table_name
 
         the_logger.info(
@@ -392,7 +382,7 @@ if __name__ == "__main__":
                 S3Decompressor(
                     file_name=file_name,
                     file_body=s3_objects_map[file_name]
-                ).decompressed_dict
+                ).decompressed_pair_list
             )
 
         for pair in decompressed_pair_list:
@@ -404,7 +394,7 @@ if __name__ == "__main__":
             )
 
         temp_tbl = spark.set_up_temp_table_with_partition(
-            args.table_prefix, date, args.database_name, destination_prefix
+            args.table_prefix, date, args.database_name, f"s3://{args.published_bucket}/{destination_prefix}"
         )
 
         spark.merge_temp_table_with_main(
