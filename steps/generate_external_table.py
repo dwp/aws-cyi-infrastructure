@@ -117,7 +117,7 @@ class AwsCommunicator:
             s3_bucket,
             s3_prefix,
         )
-        objects = []
+        keys = []
         paginator = self.s3_client.get_paginator("list_objects_v2")
         pages = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix)
         for page in pages:
@@ -125,12 +125,13 @@ class AwsCommunicator:
                 for obj in page["Contents"]:
                     key = obj["Key"]
                     if s3_prefix != key:
-                        objects.append(obj)
-        the_logger.debug(
+                        keys.append(key)
+        the_logger.info(
             "Objects found : %s",
-            objects
+            keys
         )
-        return objects
+        return keys
+
 
     def get_name_mapped_to_streaming_body_from_keys(self, s3_bucket, key_list):
         """ Ge
@@ -138,8 +139,16 @@ class AwsCommunicator:
         :param key_list: list of keys in s3_bucket the get ["prefix/object.example", ...]
         :return: map of file name to streaming body of object
         """
-        get_body = lambda k: self.s3_client.get_object(Bucket=s3_bucket, Key=k).get("Body")
-        return {key.split('/')[-1]: get_body(key) for key in key_list}
+        return {key.split('/')[-1]: self.get_body_for_key(s3_bucket, key) for key in key_list}
+
+
+    def get_body_for_key(self, s3_bucket, key):
+        """ Gets the body of the given s3 key
+        :param s3_bucket: the bucket holding the objects described in the key_list
+        :param key_list: list of keys in s3_bucket the get ["prefix/object.example", ...]
+        :return: map of file name to streaming body of object
+        """
+        return self.s3_client.get_object(Bucket=s3_bucket, Key=key)["Body"].read()
 
 
     def delete_existing_s3_files(self, s3_bucket, s3_prefix):
