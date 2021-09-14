@@ -26,7 +26,7 @@ resource "aws_s3_bucket_object" "generate_external_table" {
       table_prefix        = "cyi"
       published_bucket    = data.terraform_remote_state.common.outputs.published_bucket.id
       src_bucket          = data.terraform_remote_state.ingestion.outputs.s3_buckets.input_bucket
-      src_s3_prefix       = "cyi/"
+      src_s3_prefix       = "cyi"
       log_level           = "INFO"
     }
   )
