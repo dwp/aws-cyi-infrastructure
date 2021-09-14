@@ -34,52 +34,48 @@ class S3Decompressor:
 
     decompressed_dict = {}
 
-    def _unzip_s3_object(self, s3_object):
+    def _unzip_s3_object(self, file_name, file_body):
         """
         Description -- unzips given compressed s3 objects to dict
         :param s3_object: The object returned from boto3.resource('s3').Object(...) call
         :param s3_key: S3 key of object (String - "<s3_prefix>/<s3_object_name>")
         :return: Dict of all files in compressed file {file_name: file_body_byte_array}
         """
-        s3_key = s3_object["Key"]
-        file_type = s3_key.split(".")[-1]
+        file_type = file_name.split(".")[-1]
 
         if file_type == "zip":
             return self._use_zip(s3_object)
-        elif file_type == "gzip" or file_type == "gz":
+        elif file_type == "gz":
             return self._use_gzip(s3_object)
         else:
             print(f".{file_type} is an unsupported file compression type")
             print("Supported file types are: .zip, .gzip or .gz")
 
-    def _use_zip(self, s3_object):
+    def _use_zip(self, file_body):
         """
         Description -- unzips .zip files from s3
         :param s3_object: The object returned from boto3.resource('s3').Object(...) call
-        :return: Dict of all files in compressed file {file_name: file_body_byte_array}
+        :return: Dict of all files in compressed file {file_name: file_body_byte_array ...}
         """
-        buffer = BytesIO(s3_object["Body"].read())
+        buffer = BytesIO(file_body.read())
         zip_obj = ZipFile(buffer)
 
         return {
-            file_name: zip_obj.open(file_name).read()
-            for file_name in zip_obj.namelist()
+            decompressed_file_name: zip_obj.open(file_name).read()
+            for decompressed_file_name in zip_obj.namelist()
         }
 
-    def _use_gzip(self, s3_object):
+    def _use_gzip(self, file_body, file_name):
         """
         Description -- unzips .gz files from s3
-        :param s3_object: The object returned from boto3.resource('s3').Object(...) call
-        :param s3_key: S3 key of object (String - "<s3_prefix>/<s3_object_name>")
+        :param file_body: The streaming body object returned from boto3.client('s3').get_object(...) call
+        :param file_name: S3 key of object without prefix
         :return: Dict of {file_name: file_body_byte_array}
         """
-        s3_key = s3_object["Key"]
-        s3_file_name = ".".join(s3_key.split("/")[-1].split(".")[:2])
+        with gzip.GzipFile(fileobj=file_body) as gzipfile:
+            content = gzipfile.read()
 
-        with gzip.GzipFile(fileobj=s3_object["Body"]) as gzipfile:
-            body = gzipfile.read()
-
-        return {s3_file_name: body}
+        return {file_name: content}
 
 
 class AwsCommunicator:
@@ -109,7 +105,7 @@ class AwsCommunicator:
             Body=file_body, Bucket=s3_bucket_name, Key=f"{s3_prefix}/{file_name}"
         )
 
-    def get_list_objects_for_prefix(self, s3_bucket, s3_prefix):
+    def get_list_keys_for_prefix(self, s3_bucket, s3_prefix):
         """Returns a list of keys within the given prefix in the given S3 bucket
         Keyword arguments:
         s3_client -- S3 client
@@ -135,6 +131,16 @@ class AwsCommunicator:
             objects
         )
         return objects
+
+    def get_name_mapped_to_streaming_body_from_keys(self, s3_bucket, key_list):
+        """ Ge
+        :param s3_bucket: the bucket holding the objects described in the key_list
+        :param key_list: list of keys in s3_bucket the get ["prefix/object.example", ...]
+        :return: map of file name to streaming body of object
+        """
+        get_body = lambda k: self.s3_client.get_object(Bucket=s3_bucket, Key=k).get("Body")
+        return {key.split('/')[-1]: get_body(key) for key in key_list}
+
 
     def delete_existing_s3_files(self, s3_bucket, s3_prefix):
         """Deletes files if exists in the given bucket and prefix
@@ -365,13 +371,15 @@ if __name__ == "__main__":
         )
 
         aws.delete_existing_s3_files(args.published_bucket, destination_prefix)
-        s3_objects = aws.get_list_objects_for_prefix(
+        s3_keys = aws.get_list_keys_for_prefix(
             args.src_bucket, f"{args.src_s3_prefix}/{date_str}"
         )
 
+        s3_objects = aws.get_name_mapped_to_streaming_body_from_keys(key_list=s3_keys, s3_bucket=args.src_bucket)
+
         for s3_object in s3_objects:
             decompressed_dict = S3Decompressor(
-                s3_object
+                (s3_object, s3_objects[s3_object])
             ).decompressed_dict
 
             for file_name in decompressed_dict:
