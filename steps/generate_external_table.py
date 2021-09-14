@@ -29,8 +29,8 @@ class CustomLogFormatter(logging.Formatter):
 
 
 class S3Decompressor:
-    def __init__(self, s3_object):
-        self.decompressed_dict = self._unzip_s3_object(s3_object)
+    def __init__(self, file_name, file_body):
+        self.decompressed_dict = self._unzip_s3_object(file_name, file_body)
 
     decompressed_dict = {}
 
@@ -44,9 +44,9 @@ class S3Decompressor:
         file_type = file_name.split(".")[-1]
 
         if file_type == "zip":
-            return self._use_zip(s3_object)
+            return self._use_zip(file_body=file_body)
         elif file_type == "gz":
-            return self._use_gzip(s3_object)
+            return self._use_gzip(file_name=file_name, file_body=file_body)
         else:
             print(f".{file_type} is an unsupported file compression type")
             print("Supported file types are: .zip, .gzip or .gz")
@@ -379,7 +379,8 @@ if __name__ == "__main__":
 
         for s3_object in s3_objects:
             decompressed_dict = S3Decompressor(
-                (s3_object, s3_objects[s3_object])
+                file_name=s3_object,
+                file_body=s3_objects[s3_object]
             ).decompressed_dict
 
             for file_name in decompressed_dict:
