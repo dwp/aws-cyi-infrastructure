@@ -14,7 +14,7 @@ START_DATE="$${10:-NOT_SET}"
       log_cyi_message "$${1}" "run-cyi.sh" "Running as: ,$USER"
   }
 
-  log_wrapper_message "Executing temp table creation and merge for export date $EXPORT_DATE"
+  log_wrapper_message "Executing temp table creation and merge for correlation id '$CORRELATION_ID', s3 bucket '$S3_BUCKET', s3 prefix '$S3_PREFIX', export date '$EXPORT_DATE' and start date '$START_DATE'"
 
   if [[ "$START_DATE" == "NOT_SET" ]]; then
     python3 /var/ci/generate_external_table.py --correlation_id "$CORRELATION_ID" --export_date "$EXPORT_DATE"
