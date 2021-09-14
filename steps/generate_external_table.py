@@ -5,6 +5,8 @@ import logging
 import sys
 import argparse
 import datetime as dt
+import findspark
+findspark.init()
 
 from zipfile import ZipFile
 from datetime import date, timedelta, datetime

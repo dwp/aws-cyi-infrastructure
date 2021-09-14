@@ -28,8 +28,8 @@
     fi
 
     sudo -E $PIP install boto3
-    sudo -E $PIP install pyspark
     sudo -E $PIP install logging
+    sudo -E $PIP install findspark
 
     #shellcheck disable=SC2024
     {
