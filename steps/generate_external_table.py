@@ -55,15 +55,15 @@ class S3Decompressor:
         """
         Description -- unzips .zip files from s3
         :param s3_object: The object returned from boto3.resource('s3').Object(...) call
-        :return: Dict of all files in compressed file {file_name: file_body_byte_array ...}
+        :return: list of pairs for all files in compressed file [(file_name, file_body_byte_array) ...]
         """
         buffer = BytesIO(file_body.read())
         zip_obj = ZipFile(buffer)
 
-        return {
-            decompressed_file_name: zip_obj.open(file_name).read()
+        return [
+            (decompressed_file_name, zip_obj.open(decompressed_file_name).read())
             for decompressed_file_name in zip_obj.namelist()
-        }
+        ]
 
     def _use_gzip(self, file_body, file_name):
         """
@@ -75,7 +75,7 @@ class S3Decompressor:
         with gzip.GzipFile(fileobj=file_body) as gzipfile:
             content = gzipfile.read()
 
-        return {file_name: content}
+        return [(file_name, content)]
 
 
 class AwsCommunicator:
@@ -148,7 +148,7 @@ class AwsCommunicator:
         s3_bucket -- the S3 bucket name
         s3_prefix -- the key to look for, could be a file path and key or simply a path
         """
-        objects = self.get_list_objects_for_prefix(s3_bucket, s3_prefix)
+        objects = self.get_list_keys_for_prefix(s3_bucket, s3_prefix)
         the_logger.info(
             "Retrieved '%s' keys from prefix '%s'",
             str(len(objects)),
@@ -375,30 +375,33 @@ if __name__ == "__main__":
             args.src_bucket, f"{args.src_s3_prefix}/{date_str}"
         )
 
-        s3_objects = aws.get_name_mapped_to_streaming_body_from_keys(key_list=s3_keys, s3_bucket=args.src_bucket)
+        s3_objects_map = aws.get_name_mapped_to_streaming_body_from_keys(key_list=s3_keys, s3_bucket=args.src_bucket)
 
-        for s3_object in s3_objects:
-            decompressed_dict = S3Decompressor(
-                file_name=s3_object,
-                file_body=s3_objects[s3_object]
-            ).decompressed_dict
+        decompressed_pair_list = []
+        for file_name in s3_objects_map.keys():
+            decompressed_pair_list.extend(
+                S3Decompressor(
+                    file_name=file_name,
+                    file_body=s3_objects_map[file_name]
+                ).decompressed_dict
+            )
 
-            for file_name in decompressed_dict:
-                aws.upload_to_bucket(
-                    file_name,
-                    decompressed_dict[file_name],
-                    args.published_bucket,
-                    destination_prefix,
-                )
+        for pair in decompressed_pair_list:
+            aws.upload_to_bucket(
+                pair[0],
+                pair[1],
+                args.published_bucket,
+                destination_prefix,
+            )
 
-                temp_tbl = spark.set_up_temp_table_with_partition(
-                    args.table_prefix, date, args.database_name, destination_prefix
-                )
+        temp_tbl = spark.set_up_temp_table_with_partition(
+            args.table_prefix, date, args.database_name, destination_prefix
+        )
 
-                spark.merge_temp_table_with_main(
-                    temp_tbl, args.database_name, args.external_table_name
-                )
+        spark.merge_temp_table_with_main(
+            temp_tbl, args.database_name, args.external_table_name
+        )
 
-                spark.cleanup_table(args.database_name, temp_tbl)
+        spark.cleanup_table(args.database_name, temp_tbl)
 
     the_logger.info(f"Completed import for export date '{args.export_date}'")
