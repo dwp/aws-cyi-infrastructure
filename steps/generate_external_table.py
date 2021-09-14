@@ -130,6 +130,10 @@ class AwsCommunicator:
                     key = obj["Key"]
                     if s3_prefix != key:
                         objects.append(obj)
+        the_logger.debug(
+            "Objects found : %s",
+            objects
+        )
         return objects
 
     def delete_existing_s3_files(self, s3_bucket, s3_prefix):
