@@ -3,15 +3,15 @@ from unittest.mock import patch
 from steps import generate_external_table
 from io import BytesIO
 
+contents = [{"Contents": [{"Key": "Key1"},{"Key": "Key2"}]}]
+no_contents = [{"NoContents": [{"Key": "Key1"},{"Key": "Key2"}]}]
 
-count = 0
-resp = [[{"Contents": [{"Key": "Key1"},{"Key": "Key2"}]}], [{"NoContents": [{"Key": "Key1"},{"Key": "Key2"}]}]]
+class MockPaginator():
+    def __init__(self, return_val):
+        self.ret_val = return_val
 
-def mock_paginate(count, resp):
-    ret_val =  resp[count]
-    count = 1
-    return ret_val
-
+    def paginate(self):
+        return self.ret_val
 
 class TestS3Decompressor(unittest.TestCase):
 
@@ -44,7 +44,7 @@ class TestAwsCommunicator(unittest.TestCase):
     def test_get_list_keys_for_prefix(self, mock_s3_client, mock_the_logger, mock_boto):
         mock_boto.return_value= None
         mock_the_logger.return_value= None
-        mock_s3_client.get_paginator.return_value = mock_paginate(count, resp)
+        mock_s3_client.get_paginator.return_value = MockPaginator(contents)
         constructed_class = generate_external_table.AwsCommunicator()
         keys = constructed_class.get_list_keys_for_prefix("test_s3", "test/prefix/")
 

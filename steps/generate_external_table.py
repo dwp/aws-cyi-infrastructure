@@ -113,7 +113,6 @@ class AwsCommunicator:
         paginator = self.s3_client.get_paginator("list_objects_v2")
         pages = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix)
         for page in pages:
-            print(page)
             if "Contents" in page:
                 for obj in page["Contents"]:
                     key = obj["Key"]
