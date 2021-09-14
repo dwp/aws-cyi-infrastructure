@@ -49,7 +49,7 @@ class S3Decompressor:
             return self._use_gzip(s3_object, s3_key)
         else:
             print(f".{file_type} is an unsupported file compression type")
-            print("Supported file types are: .zip and .gzip")
+            print("Supported file types are: .zip, .gzip or .gz")
 
     def _use_zip(self, s3_object):
         """
