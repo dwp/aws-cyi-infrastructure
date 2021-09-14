@@ -292,7 +292,7 @@ def get_parameters():
     )
     # Parse command line inputs and set defaults
     parser.add_argument("--correlation_id", default="NOT_SET")
-    parser.add_argument("--export_date", default=datetime.now())
+    parser.add_argument("--export_date", default=datetime.today().strftime("%Y-%m-%d"))
     parser.add_argument("--start_date", default="")
 
     # Terraform template values
@@ -340,6 +340,10 @@ if __name__ == "__main__":
 
     args = get_parameters()
 
+    the_logger.info(
+        f"Args created : '{args}'"
+    )
+
     spark = PysparkJobRunner()
     aws = AwsCommunicator()
     
@@ -355,7 +359,7 @@ if __name__ == "__main__":
         date_range = [datetime.strptime(args.export_date, "%Y-%m-%d")]
 
     for date in date_range:
-        date_str = datetime.strftime(date, "%Y-%m-%d")
+        date_str = date.strftime("%Y-%m-%d")
         destination_prefix = (
             f"{args.database_name}/external/{date_str}"
         )

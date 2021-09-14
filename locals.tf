@@ -67,9 +67,9 @@ locals {
   }
 
   aws_cyi_infrastructure_log_level = {
-    development = "DEBUG"
-    qa          = "DEBUG"
-    integration = "DEBUG"
+    development = "INFO"
+    qa          = "INFO"
+    integration = "INFO"
     preprod     = "INFO"
     production  = "INFO"
   }
