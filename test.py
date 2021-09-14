@@ -4,6 +4,14 @@ from steps import generate_external_table
 from io import BytesIO
 
 
+count = 0
+resp = [[{"Contents": [{"Key": "Key1"},{"Key": "Key2"}]}], [{"NoContents": [{"Key": "Key1"},{"Key": "Key2"}]}]]
+
+def mock_paginate(count, resp):
+    ret_val =  resp[count]
+    count = 1
+    return ret_val
+
 
 class TestS3Decompressor(unittest.TestCase):
 
@@ -24,13 +32,23 @@ class TestAwsCommunicator(unittest.TestCase):
 
     @patch('steps.generate_external_table.boto3')
     def test_init(self, mock_boto):
-        mock_boto.return_value= ["s3_client"]
+        mock_boto.client.return_value= "s3_client"
         constructed_class = generate_external_table.AwsCommunicator()
 
         self.assertEqual(constructed_class.s3_client, "s3_client")
         self.assertEqual(constructed_class.s3_bucket, None)
 
+    @patch('steps.generate_external_table.boto3')
+    @patch('steps.generate_external_table.the_logger')
+    @patch('steps.generate_external_table.AwsCommunicator.s3_client')
+    def test_get_list_keys_for_prefix(self, mock_s3_client, mock_the_logger, mock_boto):
+        mock_boto.return_value= None
+        mock_the_logger.return_value= None
+        mock_s3_client.get_paginator.return_value = mock_paginate(count, resp)
+        constructed_class = generate_external_table.AwsCommunicator()
+        keys = constructed_class.get_list_keys_for_prefix("test_s3", "test/prefix/")
 
+        self.assertEqual(["Key1", "Key2"], keys)
 
 
 if __name__ == '__main__':

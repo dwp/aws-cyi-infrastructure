@@ -81,7 +81,9 @@ class S3Decompressor:
 class AwsCommunicator:
     def __init__(self):
         self.s3_client = boto3.client("s3")
-        self.s3_bucket = None
+
+    s3_client = None
+    s3_bucket = None
 
     def upload_to_bucket(self, file_name, file_body, s3_bucket_name, s3_prefix):
         """
@@ -111,13 +113,14 @@ class AwsCommunicator:
         paginator = self.s3_client.get_paginator("list_objects_v2")
         pages = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix)
         for page in pages:
+            print(page)
             if "Contents" in page:
                 for obj in page["Contents"]:
                     key = obj["Key"]
                     if s3_prefix != key:
                         keys.append(key)
         the_logger.info(
-            "Objects found : %s",
+            "Keys found : %s",
             keys
         )
         return keys
@@ -147,16 +150,15 @@ class AwsCommunicator:
         s3_bucket -- the S3 bucket name
         s3_prefix -- the key to look for, could be a file path and key or simply a path
         """
-        objects = self.get_list_keys_for_prefix(s3_bucket, s3_prefix)
+        keys = self.get_list_keys_for_prefix(s3_bucket, s3_prefix)
         the_logger.info(
             "Retrieved '%s' keys from prefix '%s'",
-            str(len(objects)),
+            str(len(keys)),
             s3_prefix,
         )
 
         waiter = self.s3_client.get_waiter("object_not_exists")
-        for obj in objects:
-            key = obj["Key"]
+        for key in keys:
             self.s3_client.delete_object(Bucket=s3_bucket, Key=key)
             waiter.wait(
                 Bucket=s3_bucket, Key=key, WaiterConfig={"Delay": 1, "MaxAttempts": 10}
