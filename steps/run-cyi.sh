@@ -20,5 +20,6 @@ START_DATE="$${10:-NOT_SET}"
     python3 /var/ci/generate_external_table.py --correlation_id "$CORRELATION_ID" --export_date "$EXPORT_DATE"
   else
     python3 /var/ci/generate_external_table.py --correlation_id "$CORRELATION_ID" --export_date "$EXPORT_DATE" --start_date "$START_DATE"
+  fi
 
 ) >> /var/log/cyi/run_cyi.log 2>&1
