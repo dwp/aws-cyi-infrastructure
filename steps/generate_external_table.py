@@ -125,9 +125,9 @@ class AwsCommunicator:
         for page in pages:
             if "Contents" in page:
                 for obj in page["Contents"]:
-                    keys.append(obj["Key"])
-        if s3_prefix in keys:
-            keys.remove(s3_prefix)
+                    key = obj["Key"]
+                    if s3_prefix != key:
+                        keys.append(key)
         return keys
 
     def delete_existing_s3_files(self, s3_bucket, s3_prefix):
@@ -169,11 +169,12 @@ class PysparkJobRunner:
 
 
     def create_database(
-        self
+        self,
+        database_name,
     ):
         """Creates the database if not exists"""
 
-        create_db_query = "CREATE DATABASE IF NOT EXISTS ${database_name}"
+        create_db_query = f"CREATE DATABASE IF NOT EXISTS {database_name}"
 
         the_logger.info(
             f"Creating database"
@@ -336,7 +337,7 @@ if __name__ == "__main__":
     spark = PysparkJobRunner()
     aws = AwsCommunicator()
     
-    spark.create_database()
+    spark.create_database(args.database_name)
 
     spark.set_up_table_from_files(
         args.database_name, args.managed_table_name, args.correlation_id
@@ -350,7 +351,7 @@ if __name__ == "__main__":
     for date in date_range:
         date_str = datetime.strftime(date, "%Y-%m-%d")
         destination_prefix = (
-            f"{args.published_bucket}/{args.database_name}/external/{date_str}"
+            f"{args.database_name}/external/{date_str}"
         )
 
         aws.delete_existing_s3_files(args.published_bucket, destination_prefix)

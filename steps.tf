@@ -24,8 +24,8 @@ resource "aws_s3_bucket_object" "generate_external_table" {
       managed_table_name  = "cyi_managed"
       external_table_name = "cyi_external"
       table_prefix        = "cyi"
-      published_bucket    = format("s3://%s", data.terraform_remote_state.common.outputs.published_bucket.id)
-      src_bucket          = format("s3://%s", data.terraform_remote_state.ingestion.outputs.s3_buckets.input_bucket)
+      published_bucket    = data.terraform_remote_state.common.outputs.published_bucket.id
+      src_bucket          = data.terraform_remote_state.ingestion.outputs.s3_buckets.input_bucket
       src_s3_prefix       = "cyi/"
       log_level           = "INFO"
     }
