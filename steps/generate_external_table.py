@@ -134,7 +134,7 @@ class AwsCommunicator:
 
 
     def get_name_mapped_to_streaming_body_from_keys(self, s3_bucket, key_list):
-        """ Ge
+        """ Gets names mapped to streaming body for list of keys
         :param s3_bucket: the bucket holding the objects described in the key_list
         :param key_list: list of keys in s3_bucket the get ["prefix/object.example", ...]
         :return: map of file name to streaming body of object
@@ -144,11 +144,11 @@ class AwsCommunicator:
 
     def get_body_for_key(self, s3_bucket, key):
         """ Gets the body of the given s3 key
-        :param s3_bucket: the bucket holding the objects described in the key_list
-        :param key_list: list of keys in s3_bucket the get ["prefix/object.example", ...]
-        :return: map of file name to streaming body of object
+        :param s3_bucket: the bucket holding the object described in the key
+        :param key: key in s3_bucket the get ["prefix/object.example", ...]
+        :return: streaming body of object
         """
-        return self.s3_client.get_object(Bucket=s3_bucket, Key=key)["Body"].read()
+        return self.s3_client.get_object(Bucket=s3_bucket, Key=key)["Body"]
 
 
     def delete_existing_s3_files(self, s3_bucket, s3_prefix):
