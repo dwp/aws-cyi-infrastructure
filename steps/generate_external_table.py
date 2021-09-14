@@ -173,7 +173,7 @@ class PysparkJobRunner:
     ):
         """Creates the database if not exists"""
 
-        create_db_query = "CREATE DATABASE IF NOT EXISTS ${target_db}"
+        create_db_query = "CREATE DATABASE IF NOT EXISTS ${database_name}"
 
         the_logger.info(
             f"Creating database"

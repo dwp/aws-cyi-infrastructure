@@ -5,7 +5,6 @@ resource "aws_s3_bucket_object" "run_cyi" {
   key        = "component/cyi/run-cyi.sh"
   content = templatefile("${path.module}/steps/run-cyi.sh",
     {
-      target_db            = local.cyi_db
       serde                = local.serde
       data_path            = local.data_path
       published_bucket     = format("s3://%s", data.terraform_remote_state.common.outputs.published_bucket.id)
@@ -21,7 +20,7 @@ resource "aws_s3_bucket_object" "generate_external_table" {
   key        = "component/cyi/generate_external_table.py"
   content = templatefile("${path.module}/steps/generate_external_table.py",
     {
-      database_name       = "cyi"
+      database_name       = local.cyi_db
       managed_table_name  = "cyi_managed"
       external_table_name = "cyi_external"
       table_prefix        = "cyi"
