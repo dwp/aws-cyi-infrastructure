@@ -184,7 +184,7 @@ locals {
     qa          = "0"
     integration = "0"
     preprod     = "0"
-    production  = "0"
+    production  = "2"
   }
 
   hive_tez_container_size = {
