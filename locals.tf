@@ -94,7 +94,7 @@ locals {
 
 
   cyi_db                  = "cyi"
-  hive_metastore_location = "data/cyi"
+  hive_metastore_location = "cyi/hive/external"
   serde                   = "org.openx.data.jsonserde.JsonSerDe"
   data_path               = "cyi/"
   cyi_scripts_location    = "/opt/emr/dataworks-cyi"
