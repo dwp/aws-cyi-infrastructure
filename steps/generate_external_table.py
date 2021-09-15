@@ -242,11 +242,10 @@ class PysparkJobRunner:
             )
             the_logger.error(e)
 
+
     def set_up_temp_table_with_partition(
-        self, table_prefix, date, database_name, collection_json_location
+        self, table_name, date_hyphen, database_name, collection_json_location
     ):
-        date_hyphen = date.strftime("%Y-%m-%d")
-        table_name = table_prefix + "_external_" + date_hyphen.replace('-', '_')
         temporary_table_name = database_name + "." + table_name
 
         the_logger.info(
@@ -259,7 +258,6 @@ class PysparkJobRunner:
         self.spark_session.sql(external_hive_create_query)
         self.spark_session.sql(external_hive_alter_query)
 
-        return table_name
 
     def merge_temp_table_with_main(self, temp_tbl, main_database, main_database_tbl):
 
@@ -395,10 +393,13 @@ if __name__ == "__main__":
                 destination_prefix,
             )
 
+        date_hyphen = date.strftime("%Y-%m-%d")
+        temp_tbl = args.table_prefix + "_external_" + date_hyphen.replace('-', '_')
+
         spark.cleanup_table(args.database_name, temp_tbl)
 
-        temp_tbl = spark.set_up_temp_table_with_partition(
-            args.table_prefix, date, args.database_name, f"s3://{args.published_bucket}/{destination_prefix}"
+        spark.set_up_temp_table_with_partition(
+            temp_tbl, date_hyphen, args.database_name, f"s3://{args.published_bucket}/{destination_prefix}"
         )
 
         spark.merge_temp_table_with_main(
