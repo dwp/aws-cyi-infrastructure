@@ -6,7 +6,6 @@ resource "aws_s3_bucket_object" "run_cyi" {
   content = templatefile("${path.module}/steps/run-cyi.sh",
     {
       serde                = local.serde
-      data_path            = local.data_path
       published_bucket     = format("s3://%s", data.terraform_remote_state.common.outputs.published_bucket.id)
       cyi_processes        = local.cyi_processes[local.environment]
       cyi_scripts_location = local.cyi_scripts_location
