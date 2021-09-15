@@ -206,6 +206,7 @@ class PysparkJobRunner:
                 f"Failed to create database"
             )
             the_logger.error(e)
+            sys.exit(-1)
 
 
     def set_up_table_from_files(
@@ -243,6 +244,7 @@ class PysparkJobRunner:
                 else ""
             )
             the_logger.error(e)
+            sys.exit(-1)
 
 
     def set_up_temp_table_with_partition(
@@ -274,6 +276,7 @@ class PysparkJobRunner:
             the_logger.error(
                 f"Failed to merge table '{temp_tbl}' into '{main_database_tbl}' with error '{e}'"
             )
+            sys.exit(-1)
 
     def cleanup_table(self, main_database, table_name):
         table_full_name = f"{main_database}.{table_name}"
