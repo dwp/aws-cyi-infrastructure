@@ -261,9 +261,8 @@ class PysparkJobRunner:
 
 
     def merge_temp_table_with_main(self, temp_tbl, main_database, main_database_tbl):
-
         try:
-            insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{temp_tbl} SELECT * FROM {main_database}.{main_database_tbl}"""
+            insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{main_database_tbl} SELECT * FROM {main_database}.{temp_tbl}"""
 
             self.spark_session.sql(insert_query)
 
