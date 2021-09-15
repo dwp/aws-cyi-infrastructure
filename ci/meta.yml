@@ -256,4 +256,3 @@ meta:
         inputs:
           - name: meta
           - name: untested_ami
-

@@ -9,7 +9,7 @@
 1. The [Launcher Lambda](https://github.com/dwp/emr-launcher) spins up an EMR based on the desired configs defined in the Terraform in this repo
 1. One of the steps added to the EMR cluster makes a temporary table over the data in S3, partitions the data to match the schema of the larger table then appends the data to the larger table within the destination S3 bucket.
 
-####[A more detailed explaination can be found here](https://git.ucd.gpn.gov.uk/dip/aws-common-infrastructure/wiki/DataWorks-AWS-Data-Products#cyi)
+#### [A more detailed explaination can be found here](https://git.ucd.gpn.gov.uk/dip/aws-common-infrastructure/wiki/DataWorks-AWS-Data-Products#cyi)
 
 ## A repository for building the CYI specific EMR cluster in AWS and ingesting data into hive
 

@@ -27,6 +27,8 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_write_data" {
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/common-model-inputs/*",
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/data",
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/data/*",
+      "${data.terraform_remote_state.common.outputs.published_bucket.arn}/cyi/external/",
+      "${data.terraform_remote_state.common.outputs.published_bucket.arn}/cyi/external/*",
     ]
   }
 
