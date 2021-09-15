@@ -24,27 +24,6 @@ variable "emr_instance_type_master" {
   }
 }
 
-variable "emr_instance_type_core_one" {
-  default = {
-    development = "m5.xlarge"
-    qa          = "m5.xlarge"
-    integration = "m5.xlarge"
-    preprod     = "m5.12xlarge"
-    production  = "m5.12xlarge"
-  }
-}
-
-# Count of instances
-variable "emr_core_instance_count" {
-  default = {
-    development = "1"
-    qa          = "1"
-    integration = "1"
-    preprod     = "2"
-    production  = "2"
-  }
-}
-
 variable "emr_ami_id" {
   description = "AMI ID to use for the HBase EMR nodes"
 }
