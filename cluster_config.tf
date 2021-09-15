@@ -37,11 +37,14 @@ resource "aws_s3_bucket_object" "instances" {
       master_sg                           = aws_security_group.aws_cyi_infrastructure_master.id
       slave_sg                            = aws_security_group.aws_cyi_infrastructure_slave.id
       service_access_sg                   = aws_security_group.aws_cyi_infrastructure_emr_service.id
-      instance_type_core_one              = var.emr_instance_type_core_one[local.environment]
-      instance_type_master                = var.emr_instance_type_master[local.environment]
-      core_instance_count                 = var.emr_core_instance_count[local.environment]
       capacity_reservation_preference     = local.emr_capacity_reservation_preference
       capacity_reservation_usage_strategy = local.emr_capacity_reservation_usage_strategy
+      instance_type_core_one   = var.emr_instance_type_core_one[local.environment]
+      instance_type_core_two   = var.emr_instance_type_core_two[local.environment]
+      instance_type_core_three = var.emr_instance_type_core_three[local.environment]
+      instance_type_master_one = var.emr_instance_type_master_one[local.environment]
+      instance_type_master_two = var.emr_instance_type_master_two[local.environment]
+      core_instance_count      = var.emr_core_instance_count[local.environment]
     }
   )
   tags = {

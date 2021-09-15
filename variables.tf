@@ -54,6 +54,67 @@ variable "region" {
   default     = "eu-west-2"
 }
 
+# Count of instances
+variable "emr_core_instance_count" {
+  default = {
+    development = "1"
+    qa          = "1"
+    integration = "1"
+    preprod     = "2"
+    production  = "2"
+  }
+}
+
+variable "emr_instance_type_master_one" {
+  default = {
+    development = "r5.2xlarge"
+    qa          = "r5.2xlarge"
+    integration = "r5.2xlarge"
+    preprod     = "r5.8xlarge"
+    production  = "r5.8xlarge"
+  }
+}
+
+variable "emr_instance_type_master_two" {
+  default = {
+    development = "m5.4xlarge"
+    qa          = "m5.4xlarge"
+    integration = "m5.4xlarge"
+    preprod     = "m5.16xlarge"
+    production  = "m5.16xlarge"
+  }
+}
+
+variable "emr_instance_type_core_one" {
+  default = {
+    development = "r5.2xlarge"
+    qa          = "r5.2xlarge"
+    integration = "r5.2xlarge"
+    preprod     = "r5.8xlarge"
+    production  = "r5.8xlarge"
+  }
+}
+
+variable "emr_instance_type_core_two" {
+  default = {
+    development = "r4.2xlarge"
+    qa          = "r4.2xlarge"
+    integration = "r4.2xlarge"
+    preprod     = "r4.8xlarge"
+    production  = "r4.8xlarge"
+  }
+}
+
+variable "emr_instance_type_core_three" {
+  default = {
+    development = "m5.4xlarge"
+    qa          = "m5.4xlarge"
+    integration = "m5.4xlarge"
+    preprod     = "m5.16xlarge"
+    production  = "m5.16xlarge"
+  }
+}
+
 variable "spark_kyro_buffer" {
   default = {
     development = "128m"
