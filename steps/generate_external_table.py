@@ -252,8 +252,7 @@ class PysparkJobRunner:
         the_logger.info(
             f"Attempting to create temporary table '{temporary_table_name}'"
         )
-
-        external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
+        external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) PARTITIONED BY (date_str STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
         the_logger.info(f"Hive create query '{external_hive_create_query}'")
         external_hive_alter_query = f"""ALTER TABLE {temporary_table_name} ADD IF NOT EXISTS PARTITION(date_str='{date_hyphen}') LOCATION '{collection_json_location}'"""
 
@@ -395,6 +394,8 @@ if __name__ == "__main__":
                 args.published_bucket,
                 destination_prefix,
             )
+
+        spark.cleanup_table(args.database_name, temp_tbl)
 
         temp_tbl = spark.set_up_temp_table_with_partition(
             args.table_prefix, date, args.database_name, f"s3://{args.published_bucket}/{destination_prefix}"
