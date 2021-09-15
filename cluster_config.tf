@@ -39,12 +39,12 @@ resource "aws_s3_bucket_object" "instances" {
       service_access_sg                   = aws_security_group.aws_cyi_infrastructure_emr_service.id
       capacity_reservation_preference     = local.emr_capacity_reservation_preference
       capacity_reservation_usage_strategy = local.emr_capacity_reservation_usage_strategy
-      instance_type_core_one   = var.emr_instance_type_core_one[local.environment]
-      instance_type_core_two   = var.emr_instance_type_core_two[local.environment]
-      instance_type_core_three = var.emr_instance_type_core_three[local.environment]
-      instance_type_master_one = var.emr_instance_type_master_one[local.environment]
-      instance_type_master_two = var.emr_instance_type_master_two[local.environment]
-      core_instance_count      = var.emr_core_instance_count[local.environment]
+      instance_type_core_one              = var.emr_instance_type_core_one[local.environment]
+      instance_type_core_two              = var.emr_instance_type_core_two[local.environment]
+      instance_type_core_three            = var.emr_instance_type_core_three[local.environment]
+      instance_type_master_one            = var.emr_instance_type_master_one[local.environment]
+      instance_type_master_two            = var.emr_instance_type_master_two[local.environment]
+      core_instance_count                 = var.emr_core_instance_count[local.environment]
     }
   )
   tags = {
@@ -106,7 +106,7 @@ resource "aws_s3_bucket_object" "configurations" {
       spark_default_parallelism                     = local.spark_default_parallelism
       spark_kyro_buffer                             = local.spark_kyro_buffer
       tez_runtime_io_sort_mb                        = local.tez_runtime_io_sort_mb[local.environment]
-      tez_runtime_unordered_output_buffer_size_mb                        = local.tez_runtime_unordered_output_buffer_size_mb[local.environment]
+      tez_runtime_unordered_output_buffer_size_mb   = local.tez_runtime_unordered_output_buffer_size_mb[local.environment]
     }
   )
   tags = {
