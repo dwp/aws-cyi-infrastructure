@@ -276,9 +276,11 @@ class PysparkJobRunner:
             )
 
     def cleanup_table(self, main_database, table_name):
-        drop_query = f"""DROP TABLE IF EXISTS {main_database}.{temp_tbl}"""
-        the_logger.info(f"Dropped table '{table_name}' successfully")
+        table_full_name = f"{main_database}.{table_name}"
+        the_logger.info(f"Dropping table '{table_full_name}'")
+        drop_query = f"""DROP TABLE IF EXISTS {table_full_name}"""
         self.spark_session.sql(drop_query)
+        the_logger.info(f"Dropped table '{table_full_name}' successfully")
 
 
 def get_dates_in_range(start_date, export_date) -> List[datetime]:
