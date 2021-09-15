@@ -77,7 +77,8 @@ class S3Decompressor:
         with gzip.GzipFile(fileobj=file_body) as gzipfile:
             content = gzipfile.read()
 
-        return [(file_name, content)]
+        decompressed_file_name = file_name.replace('.gz', '')
+        return [(decompressed_file_name, content)]
 
 
 class AwsCommunicator:
