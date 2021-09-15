@@ -282,13 +282,13 @@ class PysparkJobRunner:
 
 
 def get_dates_in_range(start_date, export_date) -> List[datetime]:
-    start_date = datetime(start_date)
-    export_date = datetime(export_date)
+    start_date_dt = datetime.strptime(start_date, "%Y-%m-%d")
+    export_date_dt = datetime.strptime(export_date, "%Y-%m-%d")
 
-    days_difference = datetime(export_date) - datetime(start_date)
-    days = days_difference.days
+    difference = export_date_dt - start_date_dt
+    days = difference.days
 
-    return [start_date + timedelta(days=i) for i in range(days + 1)]
+    return [start_date_dt + timedelta(days=i) for i in range(days + 1)]
 
 
 def get_parameters():
