@@ -1,6 +1,6 @@
 **/.idea/
 **/.terraform/
-**/__pycache__/
+steps/__pycache__/
 
 **/*.tfvars
 **/*.tfstate
