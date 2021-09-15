@@ -176,6 +176,7 @@ class PysparkJobRunner:
             .config("spark.hadoop.fs.s3.maxRetries", "20")
             .config("spark.rpc.numRetries", "10")
             .config("spark.task.maxFailures", "10")
+            .config("spark.scheduler.mode", "FAIR")
             .config("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
             .appName("spike")
             .enableHiveSupport()

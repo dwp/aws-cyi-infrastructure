@@ -74,7 +74,7 @@ Configurations:
     "hive.vectorized.execution.ptf.enabled": "false"
     "hive.vectorized.row.serde.inputformat.excludes": ""
     "hive_timeline_logging_enabled": "true"
-    "hive.server2.tez.sessions.per.default.queue": "${hive_tez_sessions_per_queue}"
+    "hive.server2.tez.sessions.per.default.queue": "5"
     "hive.server2.tez.initialize.default.sessions": "true"
     "hive.blobstore.optimizations.enabled": "false"
     "hive.prewarm.enabled": "true"
@@ -90,12 +90,13 @@ Configurations:
     "tez.am.resource.memory.mb": "${tez_am_resource_memory_mb}"
     "tez.am.launch.cmd-opts": "${tez_am_launch_cmd_opts}"
     "tez.am.container.reuse.enabled": "true"
+    "tez.runtime.io.sort.mb": "${tez_runtime_io_sort_mb}"
+    "tez.runtime.unordered.output.buffer.size-mb": "${tez_runtime_unordered_output_buffer_size_mb}"
 
 - Classification: "emrfs-site"
   Properties:
     "fs.s3.maxConnections": "10000"
     "fs.s3.maxRetries": "20"
-
 - Classification: "spark-env"
   Configurations:
   - Classification: "export"

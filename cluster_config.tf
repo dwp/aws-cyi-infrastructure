@@ -102,6 +102,8 @@ resource "aws_s3_bucket_object" "configurations" {
       spark_executor_instances                      = local.spark_executor_instances
       spark_default_parallelism                     = local.spark_default_parallelism
       spark_kyro_buffer                             = local.spark_kyro_buffer
+      tez_runtime_io_sort_mb                        = local.tez_runtime_io_sort_mb[local.environment]
+      tez_runtime_unordered_output_buffer_size_mb                        = local.tez_runtime_unordered_output_buffer_size_mb[local.environment]
     }
   )
   tags = {
