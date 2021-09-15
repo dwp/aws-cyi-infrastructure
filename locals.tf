@@ -222,6 +222,14 @@ locals {
     production  = "6144"
   }
 
+  tez_runtime_unordered_output_buffer_size_mb = {
+    development = "268"
+    qa          = "268"
+    integration = "268"
+    preprod     = "2148"
+    production  = "2148"
+  }
+
   tez_grouping_min_size = {
     development = "1342177"
     qa          = "1342177"
