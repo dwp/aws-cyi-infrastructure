@@ -144,6 +144,25 @@ meta:
           - name: aws-cyi-infrastructure
           - name: meta
 
+    step-unit-tests:
+      task: step-unit-tests
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((dataworks.docker_python_boto_behave_repository))
+            tag: ((dataworks.docker_python_boto_behave_version))
+        run:
+          path: sh
+          dir: aws-cyi-infrastructure
+          args:
+            - -exc
+            - |
+              python3 -m unittest -v
+        inputs:
+          - name: aws-cyi-infrastructure
+
     ami-test-results:
       task: ami-test-result
       config:

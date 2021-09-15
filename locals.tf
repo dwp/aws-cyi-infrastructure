@@ -67,9 +67,9 @@ locals {
   }
 
   aws_cyi_infrastructure_log_level = {
-    development = "DEBUG"
-    qa          = "DEBUG"
-    integration = "DEBUG"
+    development = "INFO"
+    qa          = "INFO"
+    integration = "INFO"
     preprod     = "INFO"
     production  = "INFO"
   }
@@ -135,7 +135,7 @@ locals {
     qa          = false
     integration = false
     preprod     = false
-    production  = false
+    production  = true
   }
 
   step_fail_action = {
@@ -143,7 +143,7 @@ locals {
     qa          = "TERMINATE_CLUSTER"
     integration = "TERMINATE_CLUSTER"
     preprod     = "TERMINATE_CLUSTER"
-    production  = "TERMINATE_CLUSTER"
+    production  = "CONTINUE"
   }
 
   cw_agent_namespace                   = "/app/cyi"
@@ -155,11 +155,11 @@ locals {
   s3_log_prefix = "emr/cyi"
 
   dynamodb_final_step = {
-    development = "create-cyi-database"
-    qa          = "create-cyi-database"
-    integration = "create-cyi-database"
-    preprod     = "create-cyi-database"
-    production  = "create-cyi-database"
+    development = "run-cyi"
+    qa          = "run-cyi"
+    integration = "run-cyi"
+    preprod     = "run-cyi"
+    production  = "run-cyi"
   }
 
   # These should be `false` unless we have agreed this data product is to use the capacity reservations so as not to interfere with existing data products running
@@ -184,7 +184,7 @@ locals {
     qa          = "0"
     integration = "0"
     preprod     = "0"
-    production  = "0"
+    production  = "2"
   }
 
   hive_tez_container_size = {
@@ -220,6 +220,14 @@ locals {
     integration = "1075"
     preprod     = "6144"
     production  = "6144"
+  }
+
+  tez_runtime_unordered_output_buffer_size_mb = {
+    development = "268"
+    qa          = "268"
+    integration = "268"
+    preprod     = "2148"
+    production  = "2148"
   }
 
   tez_grouping_min_size = {

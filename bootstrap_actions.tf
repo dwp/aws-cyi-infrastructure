@@ -178,3 +178,14 @@ resource "aws_s3_bucket_object" "update_dynamo_sh" {
     Name = "update_dynamo"
   }
 }
+
+resource "aws_s3_bucket_object" "installer_sh" {
+  bucket = data.terraform_remote_state.common.outputs.config_bucket.id
+  key    = "component/cyi/installer.sh"
+  content = templatefile("${path.module}/bootstrap_actions/installer.sh",
+    {
+      full_proxy    = data.terraform_remote_state.internal_compute.outputs.internet_proxy.url
+      full_no_proxy = local.no_proxy
+    }
+  )
+}

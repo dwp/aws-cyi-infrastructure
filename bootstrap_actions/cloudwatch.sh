@@ -78,6 +78,12 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<CWAGEN
             "timezone": "UTC"
           },
           {
+            "file_path": "/var/log/cyi/installer.log",
+            "log_group_name": "$${cwa_bootstrap_loggrp_name}",
+            "log_stream_name": "{instance_id}-installer.log",
+            "timezone": "UTC"
+          },
+          {
             "file_path": "/var/log/cyi/status_metrics.log",
             "log_group_name": "$${cwa_bootstrap_loggrp_name}",
             "log_stream_name": "{instance_id}-status-metrics.log",
@@ -90,9 +96,9 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<CWAGEN
             "timezone": "UTC"
           },
           {
-            "file_path": "/var/log/cyi/create_cyi_databases.log",
+            "file_path": "/var/log/cyi/run_cyi.log",
             "log_group_name": "$${cwa_steps_loggrp_name}",
-            "log_stream_name": "{instance_id}-create-cyi-databases.log",
+            "log_stream_name": "{instance_id}-run-cyi.log",
             "timezone": "UTC"
           },
           {

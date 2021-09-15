@@ -37,11 +37,14 @@ resource "aws_s3_bucket_object" "instances" {
       master_sg                           = aws_security_group.aws_cyi_infrastructure_master.id
       slave_sg                            = aws_security_group.aws_cyi_infrastructure_slave.id
       service_access_sg                   = aws_security_group.aws_cyi_infrastructure_emr_service.id
-      instance_type_core_one              = var.emr_instance_type_core_one[local.environment]
-      instance_type_master                = var.emr_instance_type_master[local.environment]
-      core_instance_count                 = var.emr_core_instance_count[local.environment]
       capacity_reservation_preference     = local.emr_capacity_reservation_preference
       capacity_reservation_usage_strategy = local.emr_capacity_reservation_usage_strategy
+      instance_type_core_one              = var.emr_instance_type_core_one[local.environment]
+      instance_type_core_two              = var.emr_instance_type_core_two[local.environment]
+      instance_type_core_three            = var.emr_instance_type_core_three[local.environment]
+      instance_type_master_one            = var.emr_instance_type_master_one[local.environment]
+      instance_type_master_two            = var.emr_instance_type_master_two[local.environment]
+      core_instance_count                 = var.emr_core_instance_count[local.environment]
     }
   )
   tags = {
@@ -85,7 +88,7 @@ resource "aws_s3_bucket_object" "configurations" {
       tez_grouping_max_size                         = local.tez_grouping_max_size[local.environment]
       tez_am_resource_memory_mb                     = local.tez_am_resource_memory_mb[local.environment]
       tez_am_launch_cmd_opts                        = local.tez_am_launch_cmd_opts[local.environment]
-      hive_metsatore_username                       = data.terraform_remote_state.internal_compute.outputs.metadata_store_users.cyi_writer.username
+      hive_metastore_username                       = data.terraform_remote_state.internal_compute.outputs.metadata_store_users.cyi_writer.username
       hive_metastore_pwd                            = data.terraform_remote_state.internal_compute.outputs.metadata_store_users.cyi_writer.secret_name
       hive_metastore_endpoint                       = data.terraform_remote_state.internal_compute.outputs.hive_metastore_v2.endpoint
       hive_metastore_database_name                  = data.terraform_remote_state.internal_compute.outputs.hive_metastore_v2.database_name
@@ -102,6 +105,8 @@ resource "aws_s3_bucket_object" "configurations" {
       spark_executor_instances                      = local.spark_executor_instances
       spark_default_parallelism                     = local.spark_default_parallelism
       spark_kyro_buffer                             = local.spark_kyro_buffer
+      tez_runtime_io_sort_mb                        = local.tez_runtime_io_sort_mb[local.environment]
+      tez_runtime_unordered_output_buffer_size_mb   = local.tez_runtime_unordered_output_buffer_size_mb[local.environment]
     }
   )
   tags = {

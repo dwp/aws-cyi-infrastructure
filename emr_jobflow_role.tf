@@ -345,3 +345,122 @@ resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_metadata_chang
   role       = aws_iam_role.aws_cyi_infrastructure.name
   policy_arn = aws_iam_policy.aws_cyi_infrastructure_metadata_change.arn
 }
+
+data "aws_iam_policy_document" "aws_cyi_infrastructure_get_ingest" {
+  statement {
+    sid    = "allowToFindIngest"
+    effect = "Allow"
+
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${data.terraform_remote_state.ingestion.outputs.s3_buckets.input_bucket}",
+    ]
+  }
+
+  statement {
+    sid    = "allowToGetFromIngest"
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+      "s3:ListObjects",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${data.terraform_remote_state.ingestion.outputs.s3_buckets.input_bucket}/cyi/*",
+      "arn:aws:s3:::${data.terraform_remote_state.ingestion.outputs.s3_buckets.input_bucket}/cyi",
+    ]
+  }
+
+  statement {
+    sid    = "allowToDecryptObjectsIngest"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey"
+    ]
+
+    resources = [
+      data.terraform_remote_state.ingestion.outputs.input_bucket_cmk.arn,
+    ]
+  }
+}
+
+resource "aws_iam_policy" "aws_cyi_infrastructure_get_ingest" {
+  name        = "aws-cyi-infrastructure-get-ingest"
+  description = "Allow get from ingest bucket"
+  policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_get_ingest.json
+  tags = {
+    Name = "aws-cyi-infrastructure-get-ingest"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_get_ingest" {
+  role       = aws_iam_role.aws_cyi_infrastructure.name
+  policy_arn = aws_iam_policy.aws_cyi_infrastructure_get_ingest.arn
+}
+
+data "aws_iam_policy_document" "aws_cyi_infrastructure_write_published" {
+  statement {
+    sid    = "allowToFindPublished"
+    effect = "Allow"
+
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${data.terraform_remote_state.common.outputs.published_bucket.id}",
+    ]
+  }
+
+  statement {
+    sid    = "allowTowriteFromPublished"
+    effect = "Allow"
+
+    actions = [
+      "s3:DeleteObject",
+      "s3:PutObject",
+      "s3:ListObjects",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${data.terraform_remote_state.common.outputs.published_bucket.id}/cyi/*",
+      "arn:aws:s3:::${data.terraform_remote_state.common.outputs.published_bucket.id}/cyi",
+    ]
+  }
+
+  statement {
+    sid    = "allowToDecryptObjectsPublished"
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey"
+    ]
+
+    resources = [
+      data.terraform_remote_state.common.outputs.published_bucket_cmk.arn,
+    ]
+  }
+}
+
+resource "aws_iam_policy" "aws_cyi_infrastructure_write_published" {
+  name        = "aws-cyi-infrastructure-write-published"
+  description = "Allow write to published bucket"
+  policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_write_published.json
+  tags = {
+    Name = "aws-cyi-infrastructure-write-published"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_write_published" {
+  role       = aws_iam_role.aws_cyi_infrastructure.name
+  policy_arn = aws_iam_policy.aws_cyi_infrastructure_write_published.arn
+}

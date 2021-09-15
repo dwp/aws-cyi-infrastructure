@@ -15,6 +15,9 @@ BootstrapActions:
 - Name: "metrics-setup"
   ScriptBootstrapAction:
     Path: "file:/var/ci/metrics-setup.sh"
+- Name: "installer"
+  ScriptBootstrapAction:
+    Path: "file:/var/ci/installer.sh"
 Steps:
 - Name: "courtesy-flush"
   HadoopJarStep:
@@ -22,10 +25,10 @@ Steps:
     - "file:/var/ci/courtesy-flush.sh"
     Jar: "s3://eu-west-2.elasticmapreduce/libs/script-runner/script-runner.jar"
   ActionOnFailure: "CONTINUE"
-- Name: "create-cyi-database"
+- Name: "run-cyi"
   HadoopJarStep:
     Args:
-    - "file:/var/ci/create-cyi-database.sh"
+    - "file:/var/ci/run-cyi.sh"
     Jar: "s3://eu-west-2.elasticmapreduce/libs/script-runner/script-runner.jar"
   ActionOnFailure: "${action_on_failure}"
 - Name: "flush-pushgateway"

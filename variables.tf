@@ -24,14 +24,13 @@ variable "emr_instance_type_master" {
   }
 }
 
-variable "emr_instance_type_core_one" {
-  default = {
-    development = "m5.xlarge"
-    qa          = "m5.xlarge"
-    integration = "m5.xlarge"
-    preprod     = "m5.12xlarge"
-    production  = "m5.12xlarge"
-  }
+variable "emr_ami_id" {
+  description = "AMI ID to use for the HBase EMR nodes"
+}
+
+variable "region" {
+  description = "AWS Region name"
+  default     = "eu-west-2"
 }
 
 # Count of instances
@@ -41,17 +40,58 @@ variable "emr_core_instance_count" {
     qa          = "1"
     integration = "1"
     preprod     = "2"
-    production  = "2"
+    production  = "8"
   }
 }
 
-variable "emr_ami_id" {
-  description = "AMI ID to use for the HBase EMR nodes"
+variable "emr_instance_type_master_one" {
+  default = {
+    development = "r5.2xlarge"
+    qa          = "r5.2xlarge"
+    integration = "r5.2xlarge"
+    preprod     = "r5.8xlarge"
+    production  = "r5.8xlarge"
+  }
 }
 
-variable "region" {
-  description = "AWS Region name"
-  default     = "eu-west-2"
+variable "emr_instance_type_master_two" {
+  default = {
+    development = "m5.4xlarge"
+    qa          = "m5.4xlarge"
+    integration = "m5.4xlarge"
+    preprod     = "m5.16xlarge"
+    production  = "m5.16xlarge"
+  }
+}
+
+variable "emr_instance_type_core_one" {
+  default = {
+    development = "r5.2xlarge"
+    qa          = "r5.2xlarge"
+    integration = "r5.2xlarge"
+    preprod     = "r5.8xlarge"
+    production  = "r5.8xlarge"
+  }
+}
+
+variable "emr_instance_type_core_two" {
+  default = {
+    development = "r4.2xlarge"
+    qa          = "r4.2xlarge"
+    integration = "r4.2xlarge"
+    preprod     = "r4.8xlarge"
+    production  = "r4.8xlarge"
+  }
+}
+
+variable "emr_instance_type_core_three" {
+  default = {
+    development = "m5.4xlarge"
+    qa          = "m5.4xlarge"
+    integration = "m5.4xlarge"
+    preprod     = "m5.16xlarge"
+    production  = "m5.16xlarge"
+  }
 }
 
 variable "spark_kyro_buffer" {

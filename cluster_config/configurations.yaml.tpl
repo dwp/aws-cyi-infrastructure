@@ -43,7 +43,7 @@ Configurations:
     "hive.support.concurrency": "true"
     "javax.jdo.option.ConnectionURL": "jdbc:mysql://${hive_metastore_endpoint}:3306/${hive_metastore_database_name}"
     "javax.jdo.option.ConnectionDriverName": "org.mariadb.jdbc.Driver"
-    "javax.jdo.option.ConnectionUserName": "${hive_metsatore_username}"
+    "javax.jdo.option.ConnectionUserName": "${hive_metastore_username}"
     "javax.jdo.option.ConnectionPassword": "${hive_metastore_pwd}"
     "hive.metastore.client.socket.timeout": "7200"
 
@@ -58,7 +58,7 @@ Configurations:
     "hive.support.concurrency": "true"
     "javax.jdo.option.ConnectionURL": "jdbc:mysql://${hive_metastore_endpoint}:3306/${hive_metastore_database_name}?createDatabaseIfNotExist=true"
     "javax.jdo.option.ConnectionDriverName": "org.mariadb.jdbc.Driver"
-    "javax.jdo.option.ConnectionUserName": "${hive_metsatore_username}"
+    "javax.jdo.option.ConnectionUserName": "${hive_metastore_username}"
     "javax.jdo.option.ConnectionPassword": "${hive_metastore_pwd}"
     "hive.metastore.client.socket.timeout": "7200"
     "hive.mapred.mode": "nonstrict"
@@ -74,7 +74,7 @@ Configurations:
     "hive.vectorized.execution.ptf.enabled": "false"
     "hive.vectorized.row.serde.inputformat.excludes": ""
     "hive_timeline_logging_enabled": "true"
-    "hive.server2.tez.sessions.per.default.queue": "${hive_tez_sessions_per_queue}"
+    "hive.server2.tez.sessions.per.default.queue": "5"
     "hive.server2.tez.initialize.default.sessions": "true"
     "hive.blobstore.optimizations.enabled": "false"
     "hive.prewarm.enabled": "true"
@@ -90,6 +90,8 @@ Configurations:
     "tez.am.resource.memory.mb": "${tez_am_resource_memory_mb}"
     "tez.am.launch.cmd-opts": "${tez_am_launch_cmd_opts}"
     "tez.am.container.reuse.enabled": "true"
+    "tez.runtime.io.sort.mb": "${tez_runtime_io_sort_mb}"
+    "tez.runtime.unordered.output.buffer.size-mb": "${tez_runtime_unordered_output_buffer_size_mb}"
 
 - Classification: "emrfs-site"
   Properties:
@@ -109,6 +111,7 @@ Configurations:
     Properties:
       "HADOOP_NAMENODE_OPTS": "\"-javaagent:/opt/emr/metrics/dependencies/jmx_prometheus_javaagent-0.14.0.jar=7101:/opt/emr/metrics/prometheus_config.yml\""
       "HADOOP_DATANODE_OPTS": "\"-javaagent:/opt/emr/metrics/dependencies/jmx_prometheus_javaagent-0.14.0.jar=7103:/opt/emr/metrics/prometheus_config.yml\""
+
 - Classification: "yarn-env"
   Configurations:
   - Classification: "export"

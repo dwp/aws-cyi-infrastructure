@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 CORRELATION_ID="$2"
 S3_BUCKET="$4"
 S3_PREFIX="$6"
