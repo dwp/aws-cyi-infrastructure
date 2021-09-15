@@ -40,9 +40,6 @@ jobs:
             dir: aws-cyi-infrastructure
           inputs:
             - name: aws-cyi-infrastructure
-      - .: (( inject meta.plan.step-unit-tests ))
-        input_mapping:
-          aws-cyi-infrastructure: aws-cyi-infrastructure-pr
       - .: (( inject meta.plan.terraform-bootstrap ))
         input_mapping:
           aws-cyi-infrastructure: aws-cyi-infrastructure-pr
