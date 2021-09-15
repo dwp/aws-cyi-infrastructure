@@ -403,7 +403,7 @@ if __name__ == "__main__":
         )
 
         spark.merge_temp_table_with_main(
-            temp_tbl, args.database_name, args.external_table_name
+            temp_tbl, args.database_name, args.managed_table_name
         )
 
         spark.cleanup_table(args.database_name, temp_tbl)
