@@ -82,11 +82,6 @@ Configurations:
     "hive.tez.java.opts": "${hive_tez_java_opts}"
     "hive.auto.convert.join": "true"
     "hive.auto.convert.join.noconditionaltask.size": "${hive_auto_convert_join_noconditionaltask_size}"
-    "hive.merge.tezfiles": "true"
-    "hive.merge.mapfiles": "true"
-    "hive.merge.mapredfiles": "true"
-    "hive.merge.size.per.task": "128000000"
-    "hive.merge.smallfiles.avgsize": "128000000"
 
 - Classification: "tez-site"
   Properties:
