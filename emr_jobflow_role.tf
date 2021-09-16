@@ -327,11 +327,6 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_metadata_change" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_read_write_processed_bucket" {
-  role       = aws_iam_role.aws_cyi_infrastructure.name
-  policy_arn = aws_iam_policy.aws_cyi_infrastructure_read_write_processed_bucket.arn
-}
-
 resource "aws_iam_policy" "aws_cyi_infrastructure_metadata_change" {
   name        = "aws-cyi-infrastructure-MetadataOptions"
   description = "Allow editing of Metadata Options"
@@ -425,14 +420,16 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_write_published" {
     effect = "Allow"
 
     actions = [
-      "s3:DeleteObject",
-      "s3:PutObject",
-      "s3:ListObjects",
+      "s3:Get*",
+      "s3:List*",
+      "s3:Delete*",
+      "s3:Put*",
     ]
 
     resources = [
       "arn:aws:s3:::${data.terraform_remote_state.common.outputs.published_bucket.id}/cyi/*",
       "arn:aws:s3:::${data.terraform_remote_state.common.outputs.published_bucket.id}/cyi",
+      "arn:aws:s3:::${data.terraform_remote_state.common.outputs.published_bucket.id}/analytical-dataset/hive/external/cyi.db/*",
     ]
   }
 

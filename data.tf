@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_write_data" {
     actions = [
       "s3:Get*",
       "s3:List*",
-      "s3:DeleteObject*",
+      "s3:Delete*",
       "s3:Put*",
     ]
 
@@ -29,6 +29,7 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_write_data" {
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/data/*",
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/cyi/external/",
       "${data.terraform_remote_state.common.outputs.published_bucket.arn}/cyi/external/*",
+      "${data.terraform_remote_state.common.outputs.published_bucket.arn}/analytical-dataset/hive/external/cyi.db/*",
     ]
   }
 
