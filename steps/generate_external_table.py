@@ -255,28 +255,60 @@ class PysparkJobRunner:
         the_logger.info(
             f"Attempting to create temporary table '{temporary_table_name}'"
         )
-        external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) PARTITIONED BY (date_str STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
+        external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
         the_logger.info(f"Hive create query '{external_hive_create_query}'")
-        external_hive_alter_query = f"""ALTER TABLE {temporary_table_name} ADD IF NOT EXISTS PARTITION(date_str='{date_hyphen}') LOCATION '{collection_json_location}'"""
 
         self.spark_session.sql(external_hive_create_query)
-        self.spark_session.sql(external_hive_alter_query)
 
+    def merge_temp_table_with_main(self, temp_tbl, date_hyphen, main_database, main_database_tbl, collection_json_location):
+        """Merges temporary table into main table, ensures main table is partitioned based on date and concatenates partition files so that its 1 file per partition.
+            Keyword arguments:
+            temp_tbl -- the name of the temp table
+            date_hyphen -- the date in string format YYYY-MM-DD
+            main_database -- the database name
+            main_database_tbl -- the table name
+            collection_json_location -- the s3 location of the files
+        """
 
-    def merge_temp_table_with_main(self, temp_tbl, main_database, main_database_tbl):
         try:
             insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{main_database_tbl} SELECT * FROM {main_database}.{temp_tbl}"""
-
             self.spark_session.sql(insert_query)
 
             the_logger.info(
                 f"Merged table '{temp_tbl}' into '{main_database_tbl}' successfully"
             )
+
         except Exception as e:
             the_logger.error(
                 f"Failed to merge table '{temp_tbl}' into '{main_database_tbl}' with error '{e}'"
             )
             sys.exit(-1)
+
+        try:
+            alter_query = f"""ALTER TABLE {main_database}.{main_database_tbl} ADD IF NOT EXISTS PARTITION(date_str='{date_hyphen}') LOCATION '{collection_json_location}'"""
+
+            self.spark_session.sql(alter_query)
+            the_logger.info(
+                f"Altered table partition for '{main_database}.{main_database_tbl}'"
+            )
+        except Exception as e:
+            the_logger.error(
+                f"Failed to alter partitions for '{main_database}.{main_database_tbl}' with error '{e}'"
+            )
+            sys.exit(-1)
+
+        try:
+            concatenate_partitions = f"""ALTER TABLE {main_database}.{main_database_tbl} PARTITION (date_str='{date_hyphen}') CONCATENATE"""
+
+            self.spark_session.sql(concatenate_partitions)
+            the_logger.info(
+                f"Concatenated table partition on table '{main_database}.{main_database_tbl}' for partition '{date_hyphen}'"
+            )
+        except Exception as e:
+            the_logger.error(
+                f"Failed to concatenate date partition on table '{main_database}.{main_database_tbl}' for partition '{date_str}' with error '{e}'"
+            )
+        sys.exit(-1)
 
     def cleanup_table(self, main_database, table_name):
         table_full_name = f"{main_database}.{table_name}"
@@ -409,7 +441,7 @@ if __name__ == "__main__":
         )
 
         spark.merge_temp_table_with_main(
-            temp_tbl, args.database_name, args.managed_table_name
+            temp_tbl, date_hyphen, args.database_name, args.managed_table_name, f"s3://{args.published_bucket}/{destination_prefix}"
         )
 
         spark.cleanup_table(args.database_name, temp_tbl)
