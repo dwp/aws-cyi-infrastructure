@@ -255,7 +255,7 @@ class PysparkJobRunner:
         the_logger.info(
             f"Attempting to create temporary table '{temporary_table_name}'"
         )
-        external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
+        external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) PARTITIONED BY (date_str STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
         the_logger.info(f"Hive create query '{external_hive_create_query}'")
 
         self.spark_session.sql(external_hive_create_query)
