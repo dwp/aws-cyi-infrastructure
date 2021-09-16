@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import patch, Mock
 import sys
 sys.modules['findspark'] = Mock()
-sys.modules['pyspark'] = Mock()
 from steps import generate_external_table
 from io import BytesIO
 from datetime import datetime
