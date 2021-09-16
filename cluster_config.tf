@@ -94,7 +94,6 @@ resource "aws_s3_bucket_object" "configurations" {
       hive_metastore_database_name                  = data.terraform_remote_state.internal_compute.outputs.hive_metastore_v2.database_name
       hive_metastore_location                       = local.hive_metastore_location
       s3_published_bucket                           = data.terraform_remote_state.common.outputs.published_bucket.id
-      s3_processed_bucket                           = data.terraform_remote_state.common.outputs.processed_bucket.id
       hive_tez_sessions_per_queue                   = local.hive_tez_sessions_per_queue[local.environment]
       s3_htme_bucket                                = data.terraform_remote_state.internal_compute.outputs.htme_s3_bucket.id
       spark_executor_cores                          = local.spark_executor_cores[local.environment]
