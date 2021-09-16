@@ -179,7 +179,6 @@ class PysparkJobRunner:
             .config("spark.task.maxFailures", "10")
             .config("spark.scheduler.mode", "FAIR")
             .config("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
-            .config("spark.sql.shuffle.partitions", "1")
             .appName("spike")
             .enableHiveSupport()
             .getOrCreate()
