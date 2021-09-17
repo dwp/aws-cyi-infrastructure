@@ -248,7 +248,7 @@ class PysparkJobRunner:
 
 
     def set_up_temp_table_with_partition(
-        self, table_name, database_name, collection_json_location
+        self, table_name, database_name, main_database_tbl, collection_json_location
     ):
         temporary_table_name = database_name + "." + table_name
 
@@ -256,9 +256,13 @@ class PysparkJobRunner:
             f"Attempting to create temporary table '{temporary_table_name}'"
         )
         external_hive_create_query = f'CREATE EXTERNAL TABLE {temporary_table_name}(val STRING) STORED AS TEXTFILE LOCATION "{collection_json_location}"'
+        external_hive_alter_query = f'ALTER TABLE {database_name}.{main_database_tbl} ADD IF NOT EXISTS PARTITION(date_str="{date_hyphen}") LOCATION "{collection_json_location}"'
+
         the_logger.info(f"Hive create query '{external_hive_create_query}'")
+        the_logger.info(f"Hive alter query '{external_hive_alter_query}'")
 
         self.spark_session.sql(external_hive_create_query)
+        self.spark_session.sql(external_hive_alter_query)
 
     def merge_temp_table_with_main(self, temp_tbl, date_hyphen, main_database, main_database_tbl):
         """Merges temporary table into main table, ensures main table is partitioned based on date and concatenates partition files so that its 1 file per partition.
@@ -411,7 +415,7 @@ if __name__ == "__main__":
         spark.cleanup_table(args.database_name, temp_tbl)
 
         spark.set_up_temp_table_with_partition(
-            temp_tbl, args.database_name, f"s3://{args.published_bucket}/{destination_prefix}"
+            temp_tbl, args.database_name, args.managed_table_name, f"s3://{args.published_bucket}/{destination_prefix}"
         )
 
         spark.merge_temp_table_with_main(
