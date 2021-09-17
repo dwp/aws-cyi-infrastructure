@@ -4,7 +4,7 @@ locals {
     qa          = true
     integration = true
     preprod     = true
-    production  = false
+    production  = true
   }
 
   persistence_tag_value = {
@@ -130,11 +130,11 @@ locals {
   }
 
   keep_cluster_alive = {
-    development = true
+    development = false
     qa          = false
     integration = false
     preprod     = false
-    production  = true
+    production  = false
   }
 
   step_fail_action = {
