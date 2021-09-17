@@ -179,6 +179,8 @@ class PysparkJobRunner:
             .config("spark.task.maxFailures", "10")
             .config("spark.scheduler.mode", "FAIR")
             .config("spark.sql.files.minPartitionNum", "1")
+            .config("spark.sql.shuffle.partitions", "50")
+            .config("spark.default.parallelism", "50")
             .config("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
             .appName("spike")
             .enableHiveSupport()
@@ -264,11 +266,10 @@ class PysparkJobRunner:
         self.spark_session.sql(external_hive_create_query)
         self.spark_session.sql(external_hive_alter_query)
 
-    def merge_temp_table_with_main(self, temp_tbl, date_hyphen, main_database, main_database_tbl):
+    def merge_temp_table_with_main(self, temp_tbl, main_database, main_database_tbl):
         """Merges temporary table into main table, ensures main table is partitioned based on date and concatenates partition files so that its 1 file per partition.
             Keyword arguments:
             temp_tbl -- the name of the temp table
-            date_hyphen -- the date in string format YYYY-MM-DD
             main_database -- the database name
             main_database_tbl -- the table name
         """
@@ -418,7 +419,7 @@ if __name__ == "__main__":
         )
 
         spark.merge_temp_table_with_main(
-            temp_tbl, date_hyphen, args.database_name, args.managed_table_name
+            temp_tbl, args.database_name, args.managed_table_name
         )
 
         spark.cleanup_table(args.database_name, temp_tbl)
