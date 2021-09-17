@@ -142,7 +142,7 @@ locals {
     qa          = "TERMINATE_CLUSTER"
     integration = "TERMINATE_CLUSTER"
     preprod     = "TERMINATE_CLUSTER"
-    production  = "CONTINUE"
+    production  = "TERMINATE_CLUSTER"
   }
 
   cw_agent_namespace                   = "/app/cyi"
