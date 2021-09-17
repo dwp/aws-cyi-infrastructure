@@ -179,8 +179,6 @@ class PysparkJobRunner:
             .config("spark.task.maxFailures", "10")
             .config("spark.scheduler.mode", "FAIR")
             .config("spark.sql.files.minPartitionNum", "1")
-            .config("spark.sql.shuffle.partitions", "50")
-            .config("spark.default.parallelism", "50")
             .config("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
             .appName("spike")
             .enableHiveSupport()
@@ -275,7 +273,7 @@ class PysparkJobRunner:
         """
 
         try:
-            insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{main_database_tbl} SELECT * FROM {main_database}.{temp_tbl}"""
+            insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{main_database_tbl} SELECT * FROM {main_database}.{temp_tbl} DISTRIBUTE BY date_str, FLOOR(RAND()*100.0)%10;"""
             self.spark_session.sql(insert_query)
 
             the_logger.info(
