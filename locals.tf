@@ -4,7 +4,7 @@ locals {
     qa          = true
     integration = true
     preprod     = true
-    production  = false
+    production  = true
   }
 
   persistence_tag_value = {
@@ -134,7 +134,7 @@ locals {
     qa          = false
     integration = false
     preprod     = false
-    production  = true
+    production  = false
   }
 
   step_fail_action = {
@@ -142,7 +142,7 @@ locals {
     qa          = "TERMINATE_CLUSTER"
     integration = "TERMINATE_CLUSTER"
     preprod     = "TERMINATE_CLUSTER"
-    production  = "CONTINUE"
+    production  = "TERMINATE_CLUSTER"
   }
 
   cw_agent_namespace                   = "/app/cyi"
