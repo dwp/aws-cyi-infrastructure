@@ -273,7 +273,7 @@ class PysparkJobRunner:
         """
 
         try:
-            insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{main_database_tbl} SELECT * FROM {main_database}.{temp_tbl} DISTRIBUTE BY date_str, FLOOR(RAND()*100.0)%10;"""
+            insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{main_database_tbl} SELECT * FROM {main_database}.{temp_tbl} DISTRIBUTE BY date_str, FLOOR(RAND()*100.0)%3;"""
             self.spark_session.sql(insert_query)
 
             the_logger.info(
