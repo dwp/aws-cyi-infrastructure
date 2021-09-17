@@ -221,7 +221,7 @@ class PysparkJobRunner:
         """
 
         src_hive_table = database_name + "." + managed_table_name
-        src_hive_create_query = f"""CREATE TABLE IF NOT EXISTS {src_hive_table}(date_str STRING, val STRING) PARTITIONED BY (date_str STRING) STORED AS orc TBLPROPERTIES ('orc.compress'='ZLIB')"""
+        src_hive_create_query = f"""CREATE TABLE IF NOT EXISTS {src_hive_table}(val STRING) PARTITIONED BY (date_str STRING) STORED AS orc TBLPROPERTIES ('orc.compress'='ZLIB')"""
 
         the_logger.info(
             f"Creating table : {src_hive_table}"
@@ -274,7 +274,7 @@ class PysparkJobRunner:
         """
 
         try:
-            insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{main_database_tbl} SELECT '{date_hyphen}' as date_str, val FROM {main_database}.{temp_tbl}"""
+            insert_query = f"""INSERT OVERWRITE TABLE {main_database}.{main_database_tbl} SELECT * FROM {main_database}.{temp_tbl}"""
             self.spark_session.sql(insert_query)
 
             the_logger.info(
