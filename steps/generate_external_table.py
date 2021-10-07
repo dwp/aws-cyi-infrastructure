@@ -1,15 +1,17 @@
-import boto3
-import gzip
-import os
-import logging
-import sys
 import argparse
 import datetime as dt
+import gzip
+import logging
+import os
+import sys
+
+import boto3
 import findspark
+
 findspark.init()
 
 from zipfile import ZipFile
-from datetime import date, timedelta, datetime
+from datetime import timedelta, datetime
 from io import BytesIO
 from pyspark.sql import SparkSession
 from typing import List
