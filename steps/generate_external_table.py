@@ -39,12 +39,6 @@ class S3Decompressor:
     decompressed_pair_list = {}
 
     def _unzip_s3_object(self, file_name, file_body):
-        """
-        Description -- unzips given compressed s3 objects to dict
-        :param s3_object: The object returned from boto3.resource('s3').Object(...) call
-        :param s3_key: S3 key of object (String - "<s3_prefix>/<s3_object_name>")
-        :return: Dict of all files in compressed file {file_name: file_body_byte_array}
-        """
         file_type = file_name.split(".")[-1]
 
         if file_type == "zip":
