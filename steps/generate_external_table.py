@@ -362,7 +362,7 @@ if __name__ == "__main__":
 
     spark = PysparkJobRunner()
     aws = AwsCommunicator()
-    
+
     spark.create_database(args.database_name)
 
     spark.set_up_table_from_files(
@@ -374,6 +374,8 @@ if __name__ == "__main__":
     else:
         date_range = [datetime.strptime(args.export_date, "%Y-%m-%d")]
 
+    dates_processed = []
+    dates_skipped = []
     for date in date_range:
         date_str = date.strftime("%Y-%m-%d")
         destination_prefix = (
@@ -385,7 +387,18 @@ if __name__ == "__main__":
             args.src_bucket, f"{args.src_s3_prefix}/{date_str}"
         )
 
-        s3_objects_map = aws.get_name_mapped_to_streaming_body_from_keys(key_list=s3_keys, s3_bucket=args.src_bucket)
+        if not s3_keys:
+            the_logger.warning(
+                "No keys found to process in bucket : '%s', prefix : '%s'",
+                args.src_bucket,
+                args.src_s3_prefix,
+            )
+            dates_skipped.append(date_str)
+            continue
+
+        s3_objects_map = aws.get_name_mapped_to_streaming_body_from_keys(
+            key_list=s3_keys, s3_bucket=args.src_bucket
+        )
 
         decompressed_pair_list = []
         for file_name in s3_objects_map.keys():
@@ -418,5 +431,10 @@ if __name__ == "__main__":
         )
 
         spark.cleanup_table(args.database_name, temp_tbl)
+        dates_processed.append(date_str)
 
-    the_logger.info(f"Completed import for export date '{args.export_date}'")
+    the_logger.info(f"Completed import for date(s): {', '.join(dates_processed)}")
+    the_logger.info(
+        f"Date(s) skipped (no files found): {', '.join(dates_skipped)}"
+        if dates_skipped else "No dates skipped"
+    )
