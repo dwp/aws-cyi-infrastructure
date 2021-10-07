@@ -1,6 +1,7 @@
 import argparse
 import datetime as dt
 import gzip
+import json
 import logging
 import os
 import sys
@@ -80,9 +81,11 @@ class S3Decompressor:
 class AwsCommunicator:
     def __init__(self):
         self.s3_client = boto3.client("s3")
+        self.sns_client = boto3.client("sns")
 
     s3_client = None
     s3_bucket = None
+    sns_client = None
 
     def upload_to_bucket(self, file_name, file_body, s3_bucket_name, s3_prefix):
         """
@@ -123,7 +126,6 @@ class AwsCommunicator:
         )
         return keys
 
-
     def get_name_mapped_to_streaming_body_from_keys(self, s3_bucket, key_list):
         """ Gets names mapped to streaming body for list of keys
         :param s3_bucket: the bucket holding the objects described in the key_list
@@ -132,7 +134,6 @@ class AwsCommunicator:
         """
         return {key.split('/')[-1]: self.get_body_for_key(s3_bucket, key) for key in key_list}
 
-
     def get_body_for_key(self, s3_bucket, key):
         """ Gets the body of the given s3 key
         :param s3_bucket: the bucket holding the object described in the key
@@ -140,7 +141,6 @@ class AwsCommunicator:
         :return: streaming body of object
         """
         return self.s3_client.get_object(Bucket=s3_bucket, Key=key)["Body"]
-
 
     def delete_existing_s3_files(self, s3_bucket, s3_prefix):
         """Deletes files if exists in the given bucket and prefix
@@ -163,6 +163,26 @@ class AwsCommunicator:
                 Bucket=s3_bucket, Key=key, WaiterConfig={"Delay": 1, "MaxAttempts": 10}
             )
 
+    def send_slack_alert(
+            self,
+            alert_arn,
+            message,
+            severity="High",
+            notification_type="Warning"
+    ):
+        if not self.sns_client:
+            self.sns_client = boto3.client("sns")
+            alert_message = json.dumps(
+                {
+                    "severity": severity,
+                    "notification_type": notification_type,
+                    "title_text": message,
+                }
+            )
+            self.sns_client.publish(
+                TargetArn=alert_arn,
+                Message=alert_message,
+            )
 
 class PysparkJobRunner:
     def __init__(self):
@@ -329,6 +349,7 @@ def get_parameters():
     args.src_bucket = "${src_bucket}"
     args.src_s3_prefix = "${src_s3_prefix}"
     args.table_prefix = "${table_prefix}"
+    args.slack_alert_arn = "${slack_alert_arn}"
 
     return args
 
@@ -394,6 +415,10 @@ if __name__ == "__main__":
                 args.src_s3_prefix,
             )
             dates_skipped.append(date_str)
+            aws.send_slack_alert(
+                alert_arn=args.slack_alert_arn,
+                message=f"CYI Found no data for prefix: {date_str}"
+            )
             continue
 
         s3_objects_map = aws.get_name_mapped_to_streaming_body_from_keys(
