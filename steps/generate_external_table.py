@@ -104,7 +104,7 @@ class AwsCommunicator:
         s3_prefix -- the key to look for, could be a file path and key or simply a path
         """
         the_logger.info(
-            "Looking for files to process in bucket : %s with prefix : %s",
+            "Looking for files in bucket : %s with prefix : %s",
             s3_bucket,
             s3_prefix,
         )
@@ -148,9 +148,10 @@ class AwsCommunicator:
         s3_bucket -- the S3 bucket name
         s3_prefix -- the key to look for, could be a file path and key or simply a path
         """
+        the_logger.info("Deleting files in bucket '%s' for prefix '%s'")
         keys = self.get_list_keys_for_prefix(s3_bucket, s3_prefix)
         the_logger.info(
-            "Retrieved '%s' keys from prefix '%s'",
+            "Retrieved '%s' keys to delete from prefix '%s'",
             str(len(keys)),
             s3_prefix,
         )
