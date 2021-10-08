@@ -165,13 +165,13 @@ data "aws_iam_policy_document" "aws_cyi_infrastructure_write_logs" {
 
 resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_publish_sns" {
   policy_arn = aws_iam_policy.aws_cyi_infrastructure_publish_sns.arn
-  role  = aws_iam_role.aws_cyi_infrastructure.name
+  role       = aws_iam_role.aws_cyi_infrastructure.name
 }
 
 resource "aws_iam_policy" "aws_cyi_infrastructure_publish_sns" {
-  name = "aws-cyi-infrastructure-publish-sns"
+  name        = "aws-cyi-infrastructure-publish-sns"
   description = "allow cyi-infrastructure to publish to monitoring sns"
-  policy = data.aws_iam_policy_document.aws_cyi_infrastructure_publish_sns.json
+  policy      = data.aws_iam_policy_document.aws_cyi_infrastructure_publish_sns.json
   tags = {
     Name = "aws_cyi_infrastructure_publish_sns"
   }
