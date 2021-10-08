@@ -170,19 +170,17 @@ class AwsCommunicator:
             severity="High",
             notification_type="Warning"
     ):
-        if not self.sns_client:
-            self.sns_client = boto3.client("sns")
-            alert_message = json.dumps(
-                {
-                    "severity": severity,
-                    "notification_type": notification_type,
-                    "title_text": message,
-                }
-            )
-            self.sns_client.publish(
-                TargetArn=alert_arn,
-                Message=alert_message,
-            )
+        alert_message = json.dumps(
+            {
+                "severity": severity,
+                "notification_type": notification_type,
+                "title_text": message,
+            }
+        )
+        self.sns_client.publish(
+            TargetArn=alert_arn,
+            Message=alert_message,
+        )
 
 class PysparkJobRunner:
     def __init__(self):
