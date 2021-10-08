@@ -27,6 +27,7 @@ resource "aws_s3_bucket_object" "generate_external_table" {
       src_bucket          = data.terraform_remote_state.ingestion.outputs.s3_buckets.input_bucket
       src_s3_prefix       = "cyi"
       log_level           = "INFO"
+      slack_alert_arn     = data.terraform_remote_state.security-tools.outputs.sns_topic_london_monitoring["arn"]
     }
   )
 }

@@ -1,15 +1,18 @@
-import boto3
-import gzip
-import os
-import logging
-import sys
 import argparse
 import datetime as dt
+import gzip
+import json
+import logging
+import os
+import sys
+
+import boto3
 import findspark
+
 findspark.init()
 
 from zipfile import ZipFile
-from datetime import date, timedelta, datetime
+from datetime import timedelta, datetime
 from io import BytesIO
 from pyspark.sql import SparkSession
 from typing import List
@@ -37,12 +40,6 @@ class S3Decompressor:
     decompressed_pair_list = {}
 
     def _unzip_s3_object(self, file_name, file_body):
-        """
-        Description -- unzips given compressed s3 objects to dict
-        :param s3_object: The object returned from boto3.resource('s3').Object(...) call
-        :param s3_key: S3 key of object (String - "<s3_prefix>/<s3_object_name>")
-        :return: Dict of all files in compressed file {file_name: file_body_byte_array}
-        """
         file_type = file_name.split(".")[-1]
 
         if file_type == "zip":
@@ -84,9 +81,11 @@ class S3Decompressor:
 class AwsCommunicator:
     def __init__(self):
         self.s3_client = boto3.client("s3")
+        self.sns_client = boto3.client("sns")
 
     s3_client = None
     s3_bucket = None
+    sns_client = None
 
     def upload_to_bucket(self, file_name, file_body, s3_bucket_name, s3_prefix):
         """
@@ -108,7 +107,7 @@ class AwsCommunicator:
         s3_prefix -- the key to look for, could be a file path and key or simply a path
         """
         the_logger.info(
-            "Looking for files to process in bucket : %s with prefix : %s",
+            "Looking for files in bucket : %s with prefix : %s",
             s3_bucket,
             s3_prefix,
         )
@@ -127,7 +126,6 @@ class AwsCommunicator:
         )
         return keys
 
-
     def get_name_mapped_to_streaming_body_from_keys(self, s3_bucket, key_list):
         """ Gets names mapped to streaming body for list of keys
         :param s3_bucket: the bucket holding the objects described in the key_list
@@ -135,7 +133,6 @@ class AwsCommunicator:
         :return: map of file name to streaming body of object
         """
         return {key.split('/')[-1]: self.get_body_for_key(s3_bucket, key) for key in key_list}
-
 
     def get_body_for_key(self, s3_bucket, key):
         """ Gets the body of the given s3 key
@@ -145,16 +142,16 @@ class AwsCommunicator:
         """
         return self.s3_client.get_object(Bucket=s3_bucket, Key=key)["Body"]
 
-
     def delete_existing_s3_files(self, s3_bucket, s3_prefix):
         """Deletes files if exists in the given bucket and prefix
         Keyword arguments:
         s3_bucket -- the S3 bucket name
         s3_prefix -- the key to look for, could be a file path and key or simply a path
         """
+        the_logger.info("Deleting files in bucket '%s' for prefix '%s'")
         keys = self.get_list_keys_for_prefix(s3_bucket, s3_prefix)
         the_logger.info(
-            "Retrieved '%s' keys from prefix '%s'",
+            "Retrieved '%s' keys to delete from prefix '%s'",
             str(len(keys)),
             s3_prefix,
         )
@@ -166,6 +163,24 @@ class AwsCommunicator:
                 Bucket=s3_bucket, Key=key, WaiterConfig={"Delay": 1, "MaxAttempts": 10}
             )
 
+    def send_slack_alert(
+            self,
+            alert_arn,
+            message,
+            severity="High",
+            notification_type="Warning"
+    ):
+        alert_message = json.dumps(
+            {
+                "severity": severity,
+                "notification_type": notification_type,
+                "title_text": message,
+            }
+        )
+        self.sns_client.publish(
+            TargetArn=alert_arn,
+            Message=alert_message,
+        )
 
 class PysparkJobRunner:
     def __init__(self):
@@ -332,6 +347,7 @@ def get_parameters():
     args.src_bucket = "${src_bucket}"
     args.src_s3_prefix = "${src_s3_prefix}"
     args.table_prefix = "${table_prefix}"
+    args.slack_alert_arn = "${slack_alert_arn}"
 
     return args
 
@@ -365,7 +381,7 @@ if __name__ == "__main__":
 
     spark = PysparkJobRunner()
     aws = AwsCommunicator()
-    
+
     spark.create_database(args.database_name)
 
     spark.set_up_table_from_files(
@@ -377,6 +393,8 @@ if __name__ == "__main__":
     else:
         date_range = [datetime.strptime(args.export_date, "%Y-%m-%d")]
 
+    dates_processed = []
+    dates_skipped = []
     for date in date_range:
         date_str = date.strftime("%Y-%m-%d")
         destination_prefix = (
@@ -388,7 +406,22 @@ if __name__ == "__main__":
             args.src_bucket, f"{args.src_s3_prefix}/{date_str}"
         )
 
-        s3_objects_map = aws.get_name_mapped_to_streaming_body_from_keys(key_list=s3_keys, s3_bucket=args.src_bucket)
+        if not s3_keys:
+            the_logger.warning(
+                "No keys found to process in bucket : '%s', prefix : '%s'",
+                args.src_bucket,
+                args.src_s3_prefix,
+            )
+            dates_skipped.append(date_str)
+            aws.send_slack_alert(
+                alert_arn=args.slack_alert_arn,
+                message=f"CYI Found no data for prefix: {date_str}"
+            )
+            continue
+
+        s3_objects_map = aws.get_name_mapped_to_streaming_body_from_keys(
+            key_list=s3_keys, s3_bucket=args.src_bucket
+        )
 
         decompressed_pair_list = []
         for file_name in s3_objects_map.keys():
@@ -421,5 +454,10 @@ if __name__ == "__main__":
         )
 
         spark.cleanup_table(args.database_name, temp_tbl)
+        dates_processed.append(date_str)
 
-    the_logger.info(f"Completed import for export date '{args.export_date}'")
+    the_logger.info(f"Completed import for date(s): {', '.join(dates_processed)}")
+    the_logger.info(
+        f"Date(s) skipped (no files found): {', '.join(dates_skipped)}"
+        if dates_skipped else "No dates skipped"
+    )
