@@ -61,6 +61,7 @@ class TestS3Decompressor(unittest.TestCase):
         self.assertEqual('test.json', constructed_class.decompressed_pair_list[0][0])
         self.assertEqual(b'{"test_key1": "test_value1"}\n{"test_key2": "test_value2"}\n', constructed_class.decompressed_pair_list[0][1])
 
+
 class TestAwsCommunicator(unittest.TestCase):
 
     @patch('steps.generate_external_table.boto3')
