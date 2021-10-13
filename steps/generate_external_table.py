@@ -47,7 +47,7 @@ class S3Decompressor:
         elif file_type == "gz":
             return self._use_gzip(file_name=file_name, file_body=file_body)
         elif file_type == "json":
-            return [(file_name, file_body)]
+            return [(file_name, file_body.read())]
         else:
             print(f".{file_type} is an unsupported file compression type")
             print("Supported file types are: .zip, .gzip or .gz")
