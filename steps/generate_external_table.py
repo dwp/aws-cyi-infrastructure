@@ -46,6 +46,8 @@ class S3Decompressor:
             return self._use_zip(file_body=file_body)
         elif file_type == "gz":
             return self._use_gzip(file_name=file_name, file_body=file_body)
+        elif file_type == "json":
+            return [(file_name, file_body)]
         else:
             print(f".{file_type} is an unsupported file compression type")
             print("Supported file types are: .zip, .gzip or .gz")
@@ -431,7 +433,6 @@ if __name__ == "__main__":
                     file_body=s3_objects_map[file_name]
                 ).decompressed_pair_list
             )
-
         for pair in decompressed_pair_list:
             aws.upload_to_bucket(
                 pair[0],

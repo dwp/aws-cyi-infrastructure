@@ -55,6 +55,12 @@ class TestS3Decompressor(unittest.TestCase):
         self.assertEqual('test.txt', constructed_class.decompressed_pair_list[0][0])
         self.assertEqual(b'{"test_key1": "test_value1"}\n{"test_key2": "test_value2"}\n', constructed_class.decompressed_pair_list[0][1])
 
+    def test_constructor_not_compressed(self):
+        bin = b'{"test_key1": "test_value1"}\n{"test_key2": "test_value2"}\n'
+        constructed_class = generate_external_table.S3Decompressor("test.json", bin)
+        self.assertEqual('test.json', constructed_class.decompressed_pair_list[0][0])
+        self.assertEqual(b'{"test_key1": "test_value1"}\n{"test_key2": "test_value2"}\n', constructed_class.decompressed_pair_list[0][1])
+
 
 class TestAwsCommunicator(unittest.TestCase):
 
