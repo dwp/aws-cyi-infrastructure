@@ -32,54 +32,6 @@ class CustomLogFormatter(logging.Formatter):
             s = "%s.%03d" % (t, record.msecs)
         return s
 
-
-class S3Decompressor:
-    def __init__(self, file_name, file_body):
-        self.decompressed_pair_list = self._unzip_s3_object(file_name, file_body)
-
-    decompressed_pair_list = {}
-
-    def _unzip_s3_object(self, file_name, file_body):
-        file_type = file_name.split(".")[-1]
-
-        if file_type == "zip":
-            return self._use_zip(file_body=file_body)
-        elif file_type == "gz":
-            return self._use_gzip(file_name=file_name, file_body=file_body)
-        elif file_type == "json":
-            return [(file_name, file_body.read())]
-        else:
-            print(f".{file_type} is an unsupported file compression type")
-            print("Supported file types are: .zip, .gzip or .gz")
-
-    def _use_zip(self, file_body):
-        """
-        Description -- unzips .zip files from s3
-        :param s3_object: The object returned from boto3.resource('s3').Object(...) call
-        :return: list of pairs for all files in compressed file [(file_name, file_body_byte_array) ...]
-        """
-        buffer = BytesIO(file_body.read())
-        zip_obj = ZipFile(buffer)
-
-        return [
-            (decompressed_file_name, zip_obj.open(decompressed_file_name).read())
-            for decompressed_file_name in zip_obj.namelist()
-        ]
-
-    def _use_gzip(self, file_body, file_name):
-        """
-        Description -- unzips .gz files from s3
-        :param file_body: The streaming body object returned from boto3.client('s3').get_object(...) call
-        :param file_name: S3 key of object without prefix
-        :return: Dict of {file_name: file_body_byte_array}
-        """
-        with gzip.GzipFile(fileobj=file_body) as gzipfile:
-            content = gzipfile.read()
-
-        decompressed_file_name = file_name.replace('.gz', '')
-        return [(decompressed_file_name, content)]
-
-
 class AwsCommunicator:
     def __init__(self):
         self.s3_client = boto3.client("s3")
@@ -424,19 +376,10 @@ if __name__ == "__main__":
         s3_objects_map = aws.get_name_mapped_to_streaming_body_from_keys(
             key_list=s3_keys, s3_bucket=args.src_bucket
         )
-
-        decompressed_pair_list = []
         for file_name in s3_objects_map.keys():
-            decompressed_pair_list.extend(
-                S3Decompressor(
-                    file_name=file_name,
-                    file_body=s3_objects_map[file_name]
-                ).decompressed_pair_list
-            )
-        for pair in decompressed_pair_list:
             aws.upload_to_bucket(
-                pair[0],
-                pair[1],
+                file_name,
+                s3_objects_map[file_name].read(),
                 args.published_bucket,
                 destination_prefix,
             )
