@@ -32,6 +32,27 @@ class CustomLogFormatter(logging.Formatter):
             s = "%s.%03d" % (t, record.msecs)
         return s
 
+class S3Compressor:
+    def __init__(self, file_name, file_body):
+        self.compressed_pair_list = self._zip_s3_object(file_name, file_body)
+
+    compressed_pair_list = {}
+
+    def _zip_s3_object(self, file_name, file_body):
+        file_type = file_name.split(".")[-1]
+
+        if file_type == "zip":
+            [(decompressed_file_name, content)] = self._use_zip(file_body=file_body)
+            file_name = decompressed_file_name.replace('.zip', '')
+            return self._use_gzip(file_name=file_name, file_body=content)
+        elif file_type == "gz":
+            return [(file_name, file_body.read())]
+        elif file_type == "json":
+            return self._use_gzip(file_name=file_name, file_body=file_body)
+        else:
+            print(f".{file_type} is an unsupported file compression type")
+            print("Supported file types are: .zip, .gzip or .gz")
+
 class AwsCommunicator:
     def __init__(self):
         self.s3_client = boto3.client("s3")
@@ -376,10 +397,18 @@ if __name__ == "__main__":
         s3_objects_map = aws.get_name_mapped_to_streaming_body_from_keys(
             key_list=s3_keys, s3_bucket=args.src_bucket
         )
+        compressed_pair_list = []
         for file_name in s3_objects_map.keys():
+            compressed_pair_list.extend(
+                S3Compressor(
+                    file_name=file_name,
+                    file_body=s3_objects_map[file_name]
+                ).compressed_pair_list
+            )
+        for pair in compressed_pair_list:
             aws.upload_to_bucket(
-                file_name,
-                s3_objects_map[file_name].read(),
+                pair[0],
+                pair[1],
                 args.published_bucket,
                 destination_prefix,
             )
