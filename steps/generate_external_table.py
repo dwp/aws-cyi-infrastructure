@@ -53,6 +53,32 @@ class S3Compressor:
             print(f".{file_type} is an unsupported file compression type")
             print("Supported file types are: .zip, .gzip or .gz")
 
+    def _use_zip(self, file_body):
+        """
+        Description -- unzips .zip files from s3
+        :param s3_object: The object returned from boto3.resource('s3').Object(...) call
+        :return: list of pairs for all files in compressed file [(file_name, file_body_byte_array) ...]
+        """
+        buffer = BytesIO(file_body.read())
+        zip_obj = ZipFile(buffer)
+
+        return [
+            (decompressed_file_name, zip_obj.open(decompressed_file_name))
+            for decompressed_file_name in zip_obj.namelist()
+        ]
+
+    def _use_gzip(self, file_body, file_name):
+        """
+        Description -- compresses content
+        :param file_body: The streaming body object returned from boto3.client('s3').get_object(...) call
+        :param file_name: S3 key of object without prefix
+        :return: Dict of {file_name: file_body_byte_array}
+        """
+        content = gzip.compress(file_body.read())
+
+        compressed_file_name = file_name + '.gz'
+        return [(compressed_file_name, content)]
+
 class AwsCommunicator:
     def __init__(self):
         self.s3_client = boto3.client("s3")
