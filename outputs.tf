@@ -13,4 +13,5 @@ output "private_dns" {
     cyi_service_discovery_dns = aws_service_discovery_private_dns_namespace.aws_cyi_infrastructure_services
     cyi_service_discovery     = aws_service_discovery_service.aws_cyi_infrastructure_services
   }
+  sensitive = true
 }
