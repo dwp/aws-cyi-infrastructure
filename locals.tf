@@ -35,7 +35,17 @@ locals {
     DWX_Application = local.emr_cluster_name
   }
 
-  common_repo_tags = merge(module.dataworks_common.common_tags, local.overridden_tags, local.common_additional_tags)
+  common_tags_exclude_keys = ["Owner", "Name", "CreatedBy"]
+
+  common_tags = merge(
+    module.dataworks_common.common_tags,
+    local.overridden_tags,
+    local.common_additional_tags
+  )
+  common_repo_tags = zipmap(
+    [for k, v in local.common_tags : k if !contains(local.common_tags_exclude_keys, k)],
+    [for k, v in local.common_tags : v if !contains(local.common_tags_exclude_keys, k)]
+  )
   common_emr_tags = {
     for-use-with-amazon-emr-managed-policies = "true"
   }
