@@ -30,7 +30,12 @@ locals {
     AutoShutdown = local.auto_shutdown_tag_value[local.environment]
   }
 
-  common_repo_tags = merge(module.dataworks_common.common_tags, local.overridden_tags)
+  common_additional_tags = {
+    DWX_Environment = local.environment
+    DWX_Application = local.emr_cluster_name
+  }
+
+  common_repo_tags = merge(module.dataworks_common.common_tags, local.overridden_tags, local.common_additional_tags)
   common_emr_tags = {
     for-use-with-amazon-emr-managed-policies = "true"
   }
