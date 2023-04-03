@@ -15,12 +15,8 @@ VisibleToAllUsers: True
 Tags:
 - Key: "Persistence"
   Value: "Ignore"
-- Key: "Owner"
-  Value: "dataworks platform"
 - Key: "AutoShutdown"
   Value: "False"
-- Key: "CreatedBy"
-  Value: "emr-launcher"
 - Key: "SSMEnabled"
   Value: "True"
 - Key: "Name"
