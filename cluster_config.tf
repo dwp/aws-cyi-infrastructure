@@ -8,14 +8,18 @@ resource "aws_s3_bucket_object" "cluster" {
   key    = "emr/cyi/cluster.yaml"
   content = templatefile("${path.module}/cluster_config/cluster.yaml.tpl",
     {
-      s3_log_bucket          = data.terraform_remote_state.security-tools.outputs.logstore_bucket.id
-      s3_log_prefix          = local.s3_log_prefix
-      ami_id                 = var.emr_ami_id
-      service_role           = aws_iam_role.aws_cyi_infrastructure_emr_service.arn
-      instance_profile       = aws_iam_instance_profile.aws_cyi_infrastructure.arn
-      security_configuration = aws_emr_security_configuration.ebs_emrfs_em.id
-      emr_release            = var.emr_release[local.environment]
-      environment_tag_value  = local.common_repo_tags.Environment
+      s3_log_bucket              = data.terraform_remote_state.security-tools.outputs.logstore_bucket.id
+      s3_log_prefix              = local.s3_log_prefix
+      ami_id                     = var.emr_ami_id
+      service_role               = aws_iam_role.aws_cyi_infrastructure_emr_service.arn
+      instance_profile           = aws_iam_instance_profile.aws_cyi_infrastructure.arn
+      security_configuration     = aws_emr_security_configuration.ebs_emrfs_em.id
+      emr_release                = var.emr_release[local.environment]
+      dwx_environment_tag_value  = local.common_repo_tags.Environment
+      application_tag_value      = data.aws_default_tags.provider_tags.tags.Application
+      function_tag_value         = data.aws_default_tags.provider_tags.tags.Function
+      business_project_tag_value = data.aws_default_tags.provider_tags.tags.Business-Project
+      environment_tag_value      = data.aws_default_tags.provider_tags.tags.Environment
     }
   )
   tags = {
@@ -28,14 +32,10 @@ resource "aws_s3_bucket_object" "instances" {
   key    = "emr/cyi/instances.yaml"
   content = templatefile("${path.module}/cluster_config/instances.yaml.tpl",
     {
-      keep_cluster_alive = local.keep_cluster_alive[local.environment]
-      add_master_sg      = aws_security_group.aws_cyi_infrastructure_common.id
-      add_slave_sg       = aws_security_group.aws_cyi_infrastructure_common.id
-      subnet_id = (
-        local.use_capacity_reservation[local.environment] == true ?
-        data.terraform_remote_state.internal_compute.outputs.cyi_subnet.subnets[index(data.terraform_remote_state.internal_compute.outputs.cyi_subnet.subnets.*.availability_zone, data.terraform_remote_state.common.outputs.ec2_capacity_reservations.emr_m5_16_x_large_2a.availability_zone)].id :
-        data.terraform_remote_state.internal_compute.outputs.cyi_subnet.subnets[index(data.terraform_remote_state.internal_compute.outputs.cyi_subnet.subnets.*.availability_zone, local.emr_subnet_non_capacity_reserved_environments)].id
-      )
+      keep_cluster_alive                  = local.keep_cluster_alive[local.environment]
+      add_master_sg                       = aws_security_group.aws_cyi_infrastructure_common.id
+      add_slave_sg                        = aws_security_group.aws_cyi_infrastructure_common.id
+      subnet_ids                          = data.terraform_remote_state.internal_compute.outputs.cyi_subnet.subnets.*.id
       master_sg                           = aws_security_group.aws_cyi_infrastructure_master.id
       slave_sg                            = aws_security_group.aws_cyi_infrastructure_slave.id
       service_access_sg                   = aws_security_group.aws_cyi_infrastructure_emr_service.id
@@ -62,6 +62,9 @@ resource "aws_s3_bucket_object" "steps" {
       s3_config_bucket    = data.terraform_remote_state.common.outputs.config_bucket.id
       action_on_failure   = local.step_fail_action[local.environment]
       s3_published_bucket = data.terraform_remote_state.common.outputs.published_bucket.id
+      environment         = local.hcs_environment[local.environment]
+      proxy_http_host     = data.terraform_remote_state.internal_compute.outputs.internet_proxy.host
+      proxy_http_port     = data.terraform_remote_state.internal_compute.outputs.internet_proxy.port
     }
   )
   tags = {
