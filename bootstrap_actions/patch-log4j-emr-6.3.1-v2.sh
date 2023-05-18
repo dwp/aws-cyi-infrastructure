@@ -12,7 +12,7 @@ PATCH_COMPLETED=/tmp/created_jndi_patch
 
 
 function check_release_version {
-    CLUSTER_RELEASE=$(cat /mnt/var/lib/instance-controller/extraInstanceData.json | jq -r '.releaseLabel' | cut -d "." -f 1,2)
+    CLUSTER_RELEASE=$(cat < /mnt/var/lib/instance-controller/extraInstanceData.json | jq -r '.releaseLabel' | cut -d "." -f 1,2)
     if [[ "$EMR_RELEASE" != "$CLUSTER_RELEASE" ]]; then
 	echo "This script is written for $EMR_RELEASE and this cluster is $CLUSTER_RELEASE. Please use the correct bootstrap script for this release."
 	exit 1
