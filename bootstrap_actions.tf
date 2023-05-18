@@ -89,6 +89,11 @@ resource "aws_s3_bucket_object" "logging_script" {
   }
 }
 
+resource "aws_s3_bucket_object" "patch_log4j_emr_sh" {
+  bucket  = data.terraform_remote_state.common.outputs.config_bucket.id
+  key     = "component/cyi/patch-log4j-emr-6.3.1-v2.sh"
+  content = file("${path.module}/bootstrap_actions/patch-log4j-emr-6.3.1-v2.sh")
+}
 resource "aws_cloudwatch_log_group" "aws_cyi_infrastructure" {
   name              = local.cw_agent_log_group_name
   retention_in_days = 180
