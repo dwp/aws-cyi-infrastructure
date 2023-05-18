@@ -1,5 +1,8 @@
 ---
 BootstrapActions:
+- Name: "run-log4j-patch"
+  ScriptBootstrapAction:
+    Path: "s3://${s3_config_bucket}/component/cyi/patch-log4j-emr-6.3.1-v2.sh"
 - Name: "download_scripts"
   ScriptBootstrapAction:
     Path: "s3://${s3_config_bucket}/component/cyi/download_scripts.sh"
@@ -26,9 +29,6 @@ BootstrapActions:
 - Name: "installer"
   ScriptBootstrapAction:
     Path: "file:/var/ci/installer.sh"
-- Name: "run-log4j-patch"
-  ScriptBootstrapAction:
-    Path: "s3://${s3_config_bucket}/component/cyi/patch-log4j-emr-6.3.1-v2.sh"
 Steps:
 - Name: "courtesy-flush"
   HadoopJarStep:
