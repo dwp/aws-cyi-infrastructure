@@ -60,3 +60,7 @@ resource "aws_iam_role_policy_attachment" "aws_cyi_infrastructure_write_data" {
   role       = aws_iam_role.aws_cyi_infrastructure.name
   policy_arn = aws_iam_policy.aws_cyi_infrastructure_write_data.arn
 }
+
+data "aws_ec2_managed_prefix_list" "list" {
+  name = "dwp-*-aws-cidrs-*"
+}
